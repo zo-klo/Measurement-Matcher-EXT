@@ -1,6 +1,6 @@
-# Measurement Matcher EXT
+# TRR Measurement Matcher EXT
 
-The purpose of this project is to improve the user experience of second-hand shoppers.
+The purpose of this project is to improve the user experience of second-hand shoppers using the luxury consignment site TheRealReal.
 
 Vintage sizing is notoriously inconsistent, especially for women. This extension enables shoppers to filter products according to clothing measurements rather than label size.
 
@@ -31,4 +31,6 @@ The extension stores those preferences, reads measurement details from supported
 
 ## Project Goal
 
-The goal of this project is to make resale shopping faster, less frustrating, and more accessible for people who need clothing to match their actual measurements, not just a nominal size tag.
+The goal of this project is to make resale shopping faster, less frustrating, and more accessible for people who need clothing to match their actual measurements, not just a nominal size tag. This is especially important for women outside of the standard size range, or with proportions that do match typical industry patterns. 
+
+Eventually, we intend to expand Measurement Matcher compatibility to other popular sites. Please reach out to zfrazerklo@gmail.com for more information.
