@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 10px;
+      width: 200px;
+    }
+
+    input {
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 4px;
+    }
+
+    button {
+      width: 100%;
+      padding: 6px;
+    }
+
+    label {
+      font-size: 13px;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    #hint {
+      color: #555;
+      font-size: 12px;
+      line-height: 1.4;
+      margin: 0 0 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <label>Waist (inches)</label>
+  <input type="number" id="waist" step="0.1">
+
+  <label>Bust (inches)</label>
+  <input type="number" id="bust" step="0.1">
+
+  <label>Tolerance (+/- inches)</label>
+  <input type="number" id="tolerance" step="0.1">
+
+  <p id="hint">
+    Enter waist, bust, or both. Products outside your tolerance will be hidden.
+  </p>
+
+  <button id="save">Save</button>
+
+  <script src="popup.js"></script>
+</body>
+</html>

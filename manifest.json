@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Simple Fit Checker",
+  "version": "1.2",
+  "description": "Checks waist measurement against my size",
+  "permissions": ["storage"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.therealreal.com/*"],
+      "js": ["contentscript.js"]
+    }
+  ]
+}
