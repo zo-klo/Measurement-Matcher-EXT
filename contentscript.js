@@ -388,6 +388,9 @@ function findGridContainer(cards) {
 function getOrCreateFilteredGridHost(gridContainer) {
   let host = document.getElementById("fit-extension-grid-host");
   if (host) {
+    if (!host.isConnected) {
+      gridContainer.insertAdjacentElement("beforebegin", host);
+    }
     return host;
   }
 
@@ -426,16 +429,25 @@ function normalizeCardForFilteredGrid(card) {
   card.style.margin = "0";
 }
 
+function cloneCardForFilteredGrid(card) {
+  const clonedCard = card.cloneNode(true);
+  normalizeCardForFilteredGrid(clonedCard);
+  return clonedCard;
+}
+
 function reorganizeGrid(gridContainer, cardsToShow, cardsToHide) {
   const filteredGridHost = getOrCreateFilteredGridHost(gridContainer);
   filteredGridHost.replaceChildren();
 
   cardsToShow.forEach((card) => {
-    normalizeCardForFilteredGrid(card);
-    filteredGridHost.appendChild(card);
+    filteredGridHost.appendChild(cloneCardForFilteredGrid(card));
   });
 
   cardsToHide.forEach((card) => {
+    card.style.display = "none";
+  });
+
+  cardsToShow.forEach((card) => {
     card.style.display = "none";
   });
 
@@ -509,9 +521,8 @@ async function supplementFromNextPages(matchProduct, existingCards, neededCount 
           continue;
         }
 
-        const clonedCard = card.cloneNode(true);
+        const clonedCard = cloneCardForFilteredGrid(card);
         absolutizeCardNode(clonedCard, nextListingUrl);
-        normalizeCardForFilteredGrid(clonedCard);
         filteredGridHost.appendChild(clonedCard);
         injectedProductUrls.add(url);
         appendedCount += 1;
@@ -549,7 +560,7 @@ async function runWithConcurrency(items, limit, worker) {
 }
 
 async function filterProductCards(matchProduct) {
-  const candidates = findProductLinkCards();
+  const candidates = findProductLinkCards(document, { requireVisible: false });
   if (!candidates.length) {
     return false;
   }
