@@ -23,6 +23,8 @@ Users enter:
 
 The extension stores those preferences, reads measurement details from supported product pages, and filters product grids based on whether an item falls within the shopper's preferred range.
 
+Development note: I developed this as a personal project and used LLM assistance with the JavaScript implementation. The shopping problem, measurement-based matching criteria, and feature decisions came from my own experience using resale sites.
+
 ## Project Goal
 
 The goal of this project is to make resale shopping faster, less frustrating, and more accessible for people who need clothing to match their actual measurements, not just a nominal size tag. This is especially important for women outside of the standard size range, or with proportions that do not match typical industry patterns. 
