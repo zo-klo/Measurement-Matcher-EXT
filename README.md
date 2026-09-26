@@ -23,7 +23,7 @@ Users enter:
 
 The extension stores those preferences, reads measurement details from supported product pages, and filters product grids based on whether an item falls within the shopper's preferred range.
 
-Development note: I developed this as a personal project and used LLM assistance with the JavaScript implementation. The shopping problem, measurement-based matching criteria, and feature decisions came from my own experience using resale sites.
+**Development note**: I developed this as a personal project and used LLM assistance with the JavaScript implementation. The shopping problem, measurement-based matching criteria, and feature decisions came from my own experience using resale sites.
 
 ## Project Goal
 
