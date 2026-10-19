@@ -22,7 +22,22 @@ function toOptionalNumber(value) {
 }
 
 function getTextValue(node) {
-  return node?.innerText?.replace(/\s+/g, " ").trim() ?? "";
+  if (!node) return "";
+
+  // DOMParser documents have no rendered innerText. Read their text nodes,
+  // excluding executable content rather than using body.textContent,
+  // which includes tracking scripts and can create bogus measurements.
+  function readableText(current) {
+    if (current.nodeType === Node.TEXT_NODE) return current.textContent || "";
+    if (current.nodeType !== Node.ELEMENT_NODE && current.nodeType !== Node.DOCUMENT_NODE) return "";
+    if (current.nodeType === Node.ELEMENT_NODE &&
+        current.matches("script, style, template, noscript")) return "";
+    return [...current.childNodes].map(readableText).join(" ");
+  }
+
+  // Measurements in collapsed product-detail sections still belong to the
+  // garment. Read them even when Chrome omits them from rendered innerText.
+  return readableText(node).replace(/\s+/g, " ").trim();
 }
 
 function normalizeMeasurementText(text) {
@@ -57,9 +72,8 @@ function pickMeasurementValue(rawValue) {
 function extractMeasurementFromText(text, label) {
   const normalizedText = normalizeMeasurementText(text);
   const patterns = [
-    new RegExp(`${label}\\s*:?\\s*([\\d.]+(?:\\s*-\\s*[\\d.]+)?\\s*(?:"|inches|inch|in)?)`, "i"),
-    new RegExp(`${label}\\s+measures\\s+([\\d.]+(?:\\s*-\\s*[\\d.]+)?\\s*(?:"|inches|inch|in)?)`, "i"),
-    new RegExp(`${label}[^\\d]{0,20}([\\d.]+(?:\\s*-\\s*[\\d.]+)?\\s*(?:"|inches|inch|in)?)`, "i")
+    new RegExp(`\\b${label}\\b\\s*:?\\s*([\\d.]+(?:\\s*-\\s*[\\d.]+)?\\s*(?:"|inches|inch|in)?)`, "i"),
+    new RegExp(`\\b${label}\\b\\s+(?:measurement\\s*:?|measures)\\s*([\\d.]+(?:\\s*-\\s*[\\d.]+)?\\s*(?:"|inches|inch|in)?)`, "i")
   ];
 
   for (const pattern of patterns) {
@@ -74,24 +88,47 @@ function extractMeasurementFromText(text, label) {
 }
 
 function extractMeasurements(root) {
+  // Current TRR pages expose the garment's attributes in Next.js data.
+  // Scope to pageProps.product: size-chart rows and recommendations are not
+  // observations of this garment and must never supply its measurements.
+  const productData = root.querySelector?.("script#__NEXT_DATA__");
+  if (productData) {
+    try {
+      const product = JSON.parse(productData.textContent)?.props?.pageProps?.product;
+      if (product) {
+        const attributes = [
+          ...(product.attributes || []),
+          ...(product.components || []).flatMap((component) => component.attributes || [])
+        ];
+        const measurement = (label) => {
+          for (const attribute of attributes) {
+            if (attribute.measurement !== true ||
+                (attribute.type?.toLowerCase() !== label && attribute.label?.toLowerCase() !== label)) continue;
+            const value = pickMeasurementValue(String(attribute.values?.[0] ?? ""));
+            if (value !== null) return value;
+          }
+          return null;
+        };
+        return { itemWaist: measurement("waist"), itemBust: measurement("bust") };
+      }
+    } catch (error) {
+      console.warn("Could not read TRR structured measurements; trying product details", error);
+    }
+  }
   const listItems = root.querySelectorAll(PRODUCT_DETAILS_SELECTOR);
   let itemWaist = null;
   let itemBust = null;
 
   listItems.forEach((li) => {
-    const label = getTextValue(li.querySelector("strong, b, span"))
-      .replace(":", "")
-      .toLowerCase();
-
     const text = getTextValue(li);
     const inferredWaist = extractMeasurementFromText(text, "waist");
     const inferredBust = extractMeasurementFromText(text, "bust");
 
-    if (label.includes("waist") && inferredWaist !== null) {
+    if (inferredWaist !== null) {
       itemWaist = inferredWaist;
     }
 
-    if (label.includes("bust") && inferredBust !== null) {
+    if (inferredBust !== null) {
       itemBust = inferredBust;
     }
   });
@@ -130,10 +167,24 @@ function buildMatcher(settings) {
     return {
       itemWaist,
       itemBust,
+      userWaist,
+      userBust,
+      tolerance,
       comparableMeasurementFound,
       overallMatch: comparableMeasurementFound && waistMatch && bustMatch
     };
   };
+}
+
+let listingStorageFailed = false;
+async function saveCheckedListing(url, root, result) {
+  try {
+    await CheckedListings.save(url, root, result);
+  } catch (error) {
+    listingStorageFailed = true;
+    console.warn("Could not save checked listing", url, error);
+    updateStatusBadge("A checked listing could not be saved. Export existing records to preserve your data.");
+  }
 }
 
 function ensureStatusBadge() {
@@ -161,7 +212,7 @@ function ensureStatusBadge() {
 }
 
 function updateStatusBadge(message) {
-  ensureStatusBadge().textContent = message;
+  ensureStatusBadge().textContent = message + (listingStorageFailed ? " Some listings could not be saved; local storage may be full." : "");
 }
 
 function showProductPageResult(result) {
@@ -235,6 +286,9 @@ function findProductLinkCards(rootDocument = document, options = {}) {
   const anchors = rootDocument.querySelectorAll("a[href]");
 
   anchors.forEach((anchor) => {
+    // Generated cards are display copies. Always re-evaluate the original
+    // source cards, including originals hidden by a previous filtering pass.
+    if (anchor.closest("#fit-extension-grid-host, #fit-extension-status")) return;
     if (requireVisible && anchor.offsetParent === null) {
       return;
     }
@@ -265,69 +319,42 @@ function findProductLinkCards(rootDocument = document, options = {}) {
   return [...cardsByUrl.values()];
 }
 
+// A denial is a failed check, not an observation of a garment. Stop further
+// requests for this page rather than retrying the same denial in hidden iframes.
+class ProductChecksBlockedError extends Error {}
+let productChecksBlocked = false;
+
+function isAccessDeniedDocument(root) {
+  return /access.*denied|verify.*human|security check/i.test(root.title || "") ||
+    !!root.querySelector?.("#px-captcha");
+}
+
 async function fetchDocument(url) {
   const response = await fetch(url, { credentials: "same-origin" });
+  if (response.status === 403 || response.status === 429) {
+    throw new ProductChecksBlockedError(`TRR blocked product checks (HTTP ${response.status}).`);
+  }
   if (!response.ok) {
-    throw new Error(`Request failed for ${url}`);
+    throw new Error(`Request failed (HTTP ${response.status}) for ${url}`);
   }
 
   const html = await response.text();
-  return new DOMParser().parseFromString(html, "text/html");
-}
-
-function loadDocumentInIframe(url) {
-  return new Promise((resolve, reject) => {
-    const iframe = document.createElement("iframe");
-    const cleanup = () => iframe.remove();
-
-    iframe.style.position = "absolute";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "0";
-    iframe.style.opacity = "0";
-    iframe.style.pointerEvents = "none";
-
-    const timeoutId = window.setTimeout(() => {
-      cleanup();
-      reject(new Error(`Timed out loading ${url} in iframe`));
-    }, 15000);
-
-    iframe.onload = () => {
-      window.clearTimeout(timeoutId);
-
-      try {
-        const loadedDocument = iframe.contentDocument;
-        if (!loadedDocument) {
-          cleanup();
-          reject(new Error(`No iframe document for ${url}`));
-          return;
-        }
-
-        resolve(loadedDocument);
-      } catch (error) {
-        reject(error);
-      } finally {
-        cleanup();
-      }
-    };
-
-    iframe.onerror = () => {
-      window.clearTimeout(timeoutId);
-      cleanup();
-      reject(new Error(`Iframe failed to load ${url}`));
-    };
-
-    iframe.src = url;
-    document.body.appendChild(iframe);
-  });
+  const root = new DOMParser().parseFromString(html, "text/html");
+  if (isAccessDeniedDocument(root)) {
+    throw new ProductChecksBlockedError("TRR returned an access-denied page.");
+  }
+  return root;
 }
 
 async function getProductDocument(url) {
+  if (productChecksBlocked) {
+    throw new ProductChecksBlockedError("TRR product checks are paused for this page.");
+  }
   try {
     return await fetchDocument(url);
-  } catch (fetchError) {
-    console.warn("Fit extension fetch failed, trying iframe fallback", url, fetchError);
-    return loadDocumentInIframe(url);
+  } catch (error) {
+    if (error instanceof ProductChecksBlockedError) productChecksBlocked = true;
+    throw error;
   }
 }
 
@@ -374,6 +401,7 @@ function findGridContainer(cards) {
     let depth = 0;
 
     while (current && current !== document.body && depth < 5) {
+      if (current.id === "fit-extension-grid-host") return;
       const count = parentCounts.get(current) || 0;
       parentCounts.set(current, count + 1);
       current = current.parentElement;
@@ -429,18 +457,27 @@ function normalizeCardForFilteredGrid(card) {
   card.style.margin = "0";
 }
 
-function cloneCardForFilteredGrid(card) {
+function cloneCardForFilteredGrid(card, unverified = false) {
   const clonedCard = card.cloneNode(true);
   normalizeCardForFilteredGrid(clonedCard);
+  if (unverified) {
+    const label = document.createElement("div");
+    label.textContent = "Measurements not checked";
+    label.style.fontSize = "12px";
+    label.style.padding = "6px";
+    label.style.background = "#fff3cd";
+    label.style.color = "#664d03";
+    clonedCard.prepend(label);
+  }
   return clonedCard;
 }
 
-function reorganizeGrid(gridContainer, cardsToShow, cardsToHide) {
+function reorganizeGrid(gridContainer, cardsToShow, cardsToHide, unverifiedCards = []) {
   const filteredGridHost = getOrCreateFilteredGridHost(gridContainer);
   filteredGridHost.replaceChildren();
 
   cardsToShow.forEach((card) => {
-    filteredGridHost.appendChild(cloneCardForFilteredGrid(card));
+    filteredGridHost.appendChild(cloneCardForFilteredGrid(card, unverifiedCards.includes(card)));
   });
 
   cardsToHide.forEach((card) => {
@@ -451,7 +488,8 @@ function reorganizeGrid(gridContainer, cardsToShow, cardsToHide) {
     card.style.display = "none";
   });
 
-  gridContainer.style.display = "none";
+  if (gridContainer !== filteredGridHost) gridContainer.style.display = "none";
+  filteredGridHost.style.display = "grid";
 }
 
 function absolutizeCardNode(cardNode, baseUrl) {
@@ -479,6 +517,7 @@ function absolutizeCardNode(cardNode, baseUrl) {
   });
 }
 
+let supplementFailed = false;
 async function supplementFromNextPages(matchProduct, existingCards, neededCount = 1) {
   if (supplementInFlight) {
     return 0;
@@ -490,6 +529,7 @@ async function supplementFromNextPages(matchProduct, existingCards, neededCount 
   }
   const filteredGridHost = getOrCreateFilteredGridHost(gridContainer);
 
+  supplementFailed = false;
   supplementInFlight = true;
   const seenListingUrls = new Set([window.location.href]);
   let nextListingUrl = getNextListingPageUrl(document, window.location.href, seenListingUrls);
@@ -515,6 +555,7 @@ async function supplementFromNextPages(matchProduct, existingCards, neededCount 
           const productDocument = await getProductDocument(url);
           result = matchProduct(extractMeasurements(productDocument));
           productResultCache.set(url, result);
+          await saveCheckedListing(url, productDocument, result);
         }
 
         if (!result.overallMatch) {
@@ -535,6 +576,7 @@ async function supplementFromNextPages(matchProduct, existingCards, neededCount 
       nextListingUrl = getNextListingPageUrl(listingDocument, nextListingUrl, seenListingUrls);
     }
   } catch (error) {
+    supplementFailed = true;
     console.warn("Fit extension could not supplement products from later pages", error);
   } finally {
     supplementInFlight = false;
@@ -559,7 +601,25 @@ async function runWithConcurrency(items, limit, worker) {
   await Promise.all(workers);
 }
 
-async function filterProductCards(matchProduct) {
+let filterInFlight = null;
+let filterAgain = false;
+function filterProductCards(matchProduct) {
+  if (filterInFlight) {
+    filterAgain = true;
+    return filterInFlight;
+  }
+  filterInFlight = (async () => {
+    let result;
+    do {
+      filterAgain = false;
+      result = await performProductCardFilter(matchProduct);
+    } while (filterAgain);
+    return result;
+  })().finally(() => { filterInFlight = null; });
+  return filterInFlight;
+}
+
+async function performProductCardFilter(matchProduct) {
   const candidates = findProductLinkCards(document, { requireVisible: false });
   if (!candidates.length) {
     return false;
@@ -573,6 +633,7 @@ async function filterProductCards(matchProduct) {
   const matchingCards = [];
   const hiddenCards = [];
   const unknownCards = [];
+  const failedCards = [];
 
   await runWithConcurrency(candidates, 4, async ({ url, card }) => {
     try {
@@ -581,6 +642,7 @@ async function filterProductCards(matchProduct) {
         const productDocument = await getProductDocument(url);
         result = matchProduct(extractMeasurements(productDocument));
         productResultCache.set(url, result);
+        await saveCheckedListing(url, productDocument, result);
       }
 
       if (result.overallMatch) {
@@ -598,22 +660,25 @@ async function filterProductCards(matchProduct) {
       unknownCards.push(card);
       unknownCount += 1;
     } catch (error) {
-      console.warn("Fit extension could not evaluate product", url, error);
-      unknownCards.push(card);
-      unknownCount += 1;
+      if (!(error instanceof ProductChecksBlockedError)) {
+        console.warn("Fit extension could not evaluate product", url, error);
+      }
+      failedCards.push(card);
     }
   });
 
+  const cardsToShow = [...matchingCards, ...failedCards];
+  const cardsToHide = [...hiddenCards, ...unknownCards];
   const gridContainer = findGridContainer(candidates);
   if (gridContainer) {
-    reorganizeGrid(gridContainer, matchingCards, [...hiddenCards, ...unknownCards]);
+    reorganizeGrid(gridContainer, cardsToShow, cardsToHide, failedCards);
   } else {
-    matchingCards.forEach((card) => {
+    cardsToShow.forEach((card) => {
       card.style.removeProperty("display");
       card.style.removeProperty("opacity");
     });
 
-    [...hiddenCards, ...unknownCards].forEach((card) => {
+    cardsToHide.forEach((card) => {
       card.style.display = "none";
     });
   }
@@ -623,11 +688,21 @@ async function filterProductCards(matchProduct) {
     `${unknownCount} still could not be measured.`
   );
 
-  if (visibleCount === 0) {
+  if (failedCards.length) {
+    updateStatusBadge(
+      `Showing ${visibleCount} matches; ${failedCards.length} unchecked listings remain visible. ` +
+      (productChecksBlocked
+        ? "TRR blocked measurement requests. Checks paused; try Reload page later."
+        : "Some product pages could not be loaded. Try Reload page later.")
+    );
+  } else if (visibleCount === 0) {
     const supplementedCount = await supplementFromNextPages(matchProduct, candidates, 1);
 
     if (supplementedCount > 0) {
       updateStatusBadge(`No matches on this page. Pulled in ${supplementedCount} match from later pages.`);
+    } else if (supplementFailed) {
+      updateStatusBadge("No matches among checked listings on this page. Later pages could not be checked" +
+        (productChecksBlocked ? " because TRR blocked measurement requests." : "."));
     } else {
       updateStatusBadge("No matches were found on this page or the next few pages.");
     }
@@ -637,7 +712,8 @@ async function filterProductCards(matchProduct) {
     foundCandidates: true,
     visibleCount,
     hiddenCount,
-    unknownCount
+    unknownCount,
+    failedCount: failedCards.length
   };
 }
 
@@ -654,8 +730,15 @@ function watchForNewProducts(matchProduct) {
   };
 
   const observer = new MutationObserver((mutations) => {
-    const hasAddedNodes = mutations.some((mutation) => mutation.addedNodes.length > 0);
-    if (hasAddedNodes) {
+    const hasNewProductLinks = mutations.some((mutation) => {
+      if (mutation.target.closest?.("#fit-extension-grid-host, #fit-extension-status")) return false;
+      return [...mutation.addedNodes].some((node) => {
+        if (node.nodeType !== Node.ELEMENT_NODE ||
+            node.closest("#fit-extension-grid-host, #fit-extension-status")) return false;
+        return node.matches("a[href*='/products/']") || !!node.querySelector("a[href*='/products/']");
+      });
+    });
+    if (hasNewProductLinks) {
       rerunFilter();
     }
   });
@@ -669,18 +752,29 @@ chrome.storage.sync.get(["waist", "bust", "tolerance"], async (settings) => {
     return;
   }
 
+  if (isAccessDeniedDocument(document)) {
+    updateStatusBadge("TRR blocked access to this page. No garment record was saved.");
+    return;
+  }
   const productPageResult = matchProduct(extractMeasurements(document));
-  if (productPageResult.comparableMeasurementFound) {
+  if (isProductUrl(new URL(window.location.href))) {
+    await saveCheckedListing(window.location.href, document, productPageResult);
     showProductPageResult(productPageResult);
     return;
   }
 
+  watchForNewProducts(matchProduct);
   const filtered = await filterProductCards(matchProduct);
   if (!filtered) {
     updateStatusBadge("No product cards with measurements were found on this page yet.");
-    watchForNewProducts(matchProduct);
     return;
   }
+});
 
-  watchForNewProducts(matchProduct);
+// The popup applies settings by restarting this page. This clears the matcher
+// cache and restores the site's original DOM before checking the new range.
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type !== "reload-fit-matcher") return;
+  sendResponse({ reloading: true });
+  window.setTimeout(() => window.location.reload(), 0);
 });

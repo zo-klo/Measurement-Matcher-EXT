@@ -3,14 +3,21 @@
   "name": "Simple Fit Checker",
   "version": "1.2",
   "description": "Checks waist measurement against my size",
-  "permissions": ["storage"],
+  "permissions": [
+    "storage"
+  ],
   "action": {
     "default_popup": "popup.html"
   },
   "content_scripts": [
     {
-      "matches": ["https://www.therealreal.com/*"],
-      "js": ["contentscript.js"]
+      "matches": [
+        "https://www.therealreal.com/*"
+      ],
+      "js": [
+        "checked-listings.js",
+        "contentscript.js"
+      ]
     }
   ]
 }

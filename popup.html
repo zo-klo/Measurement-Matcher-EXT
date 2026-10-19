@@ -45,11 +45,18 @@
   <input type="number" id="tolerance" step="0.1">
 
   <p id="hint">
-    Enter waist, bust, or both. Products outside your tolerance will be hidden.
+    Leave an unused measurement blank. Save &amp; apply restarts matching with your changes.
+    Reload page restarts matching with your saved settings.
   </p>
 
-  <button id="save">Save</button>
+  <button id="save">Save &amp; apply</button>
+  <button id="reload" style="margin-top: 8px">Reload page</button>
+  <p id="settings-status" role="status" style="font-size: 12px"></p>
 
+  <button id="export" style="margin-top: 8px">Export checked listings</button>
+  <p id="export-status" role="status" style="font-size: 12px"></p>
+
+  <script src="checked-listings.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

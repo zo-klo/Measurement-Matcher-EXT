@@ -34,3 +34,9 @@ The extension stores those preferences, reads measurement details from supported
 The goal of this project is to make resale shopping faster, less frustrating, and more accessible for people who need clothing to match their actual measurements, not just a nominal size tag. This is especially important for women outside of the standard size range, or with proportions that do match typical industry patterns. 
 
 Eventually, we intend to expand Measurement Matcher compatibility to other popular sites. Please reach out to zfrazerklo@gmail.com for more information.
+
+## Export checked listings
+
+The popup includes **Export checked listings**. Checked garments are saved locally with measurements, matching preferences and result, observation time, price, designer, sale details, fabric composition, and garment condition when available. Preferences continue to use synced storage. Export produces a CSV for later querying in PostgreSQL; no database connection is needed. See `../EXPORTS.md` for field meanings and storage behavior.
+
+Use **Save & apply** to save measurements and restart matching on the current TRR page. **Reload page** restarts with already-saved settings. Leave bust or waist blank when you do not want to filter by that measurement.
