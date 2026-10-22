@@ -12,6 +12,7 @@ When a listing page is loaded, the extension:
 - filters the grid to show matching products first
 - hides items outside the selected range
 - can pull in matching products from later pages when the current page has no matches
+- saves dated observations of checked listings locally and lets users download them as a CSV
 
 ## How It Works
 
@@ -33,6 +34,43 @@ Eventually, we intend to expand Measurement Matcher compatibility to include oth
 
 ## Export checked listings
 
-The popup includes **Export checked listings**. Checked garments are saved locally with measurements, matching preferences and result, observation time, price, designer, sale details, fabric composition, and garment condition when available. Preferences continue to use synced storage. Export produces a CSV for later querying in PostgreSQL; no database connection is needed. See `../EXPORTS.md` for field meanings and storage behavior.
+The extension records garments as the matcher checks them, including products checked from later results pages and product pages opened directly. Use the popup's **Export checked listings** button to download the saved observations for spreadsheet analysis or import into PostgreSQL.
 
-Use **Save & apply** to save measurements and restart matching on the current TRR page. **Reload page** restarts with already-saved settings. Leave bust or waist blank when you do not want to filter by that measurement.
+### Download workflow
+
+1. Enter waist, bust, and tolerance in the popup, then click **Save & apply**. This saves the preferences and reloads the current TRR page to restart matching. Leave an unused measurement blank.
+2. Browse TRR with saved measurements. Each fresh product evaluation saves a dated observation. **Reload page** restarts the current page with already-saved settings without saving unsaved popup edits.
+3. Click **Export checked listings**. The browser downloads a UTF-8 CSV named `checked-listings-YYYY-MM-DD.csv`, containing all saved observations in chronological order. If no observations exist yet, the popup asks you to browse TRR first.
+
+Exporting keeps the saved observations, so they remain available for later downloads. Revisiting a product can produce another dated row; cached results within the same page are not saved again.
+
+### CSV fields
+
+The CSV includes a header row with these column names:
+
+| Column(s) | Contents |
+| --- | --- |
+| `product_url`, `item_id` | Product URL with query parameters and fragments removed; item ID when available. |
+| `observed_at` | Date and time checked, as an ISO 8601 UTC timestamp. |
+| `garment_bust`, `garment_waist` | Measurements extracted from the garment listing, in inches. |
+| `user_bust`, `user_waist`, `tolerance` | Saved measurements and allowance used for that check, in inches. |
+| `bust_difference`, `waist_difference` | Garment measurement minus user measurement, in inches; positive values mean the garment is larger. |
+| `result` | `match`, `not match`, or `undetermined`. |
+| `product_price`, `currency` | Observed listing price and currency when available. |
+| `on_sale` | `true` or `false` when explicit sale details or comparable original/current prices establish sale status; otherwise blank. |
+| `designer` | Garment designer or brand when available. |
+| `estimated_percent_off_retail` | Listed percentage off estimated retail, as a number such as `65` for 65%. |
+| `fabric_composition` | Listed fabric or material composition when available. |
+| `garment_condition` | Listed garment condition when available. |
+
+A `match` satisfies all configured measurements within the saved tolerance. A `not match` has at least one known requested measurement outside the range. `undetermined` means required measurements are missing and there is no known mismatch. Blank user measurements are ignored by matching; their differences are also blank.
+
+Missing data is stored as `null` and exported as empty fields. Prices, sale details, fabric, and condition depend on what the product page exposes and the extension can extract. CSV fields preserve commas, quotation marks, and line breaks; scraped text that could execute as a spreadsheet formula receives an apostrophe prefix.
+
+### Storage and availability
+
+Sizing preferences remain in `chrome.storage.sync`. Checked listing observations, including the preferences used for each check, are saved separately in `chrome.storage.local` on this Chrome installation and do not sync between devices. Records are subject to Chrome's local storage quota, are not automatically deleted, and are removed when the extension is uninstalled. The page status badge reports saving failures while filtering continues.
+
+Failed or denied product requests do not create garment observations. If TRR blocks or rate-limits measurement checks, the extension pauses further requests on that page, leaves unchecked listings visible and labeled, and reports incomplete filtering. Use **Reload page** later to retry.
+
+The downloaded CSV can be imported into PostgreSQL using your preferred tools. The extension does not connect directly to a database or include a SQL script. See [Checked listing exports](../EXPORTS.md) for additional implementation details and regression-check instructions.
