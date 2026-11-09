@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Measurement Matcher",
+  "version": "1.9.2",
+  "description": "Filter TheRealReal clothing by waist, bust, hip, inseam, rise, and leg opening. Export checked listings as CSV.",
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Measurement Matcher",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.therealreal.com/*"
+      ],
+      "js": [
+        "matching.js",
+        "checked-listings.js",
+        "contentscript.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none';"
+  },
+  "minimum_chrome_version": "99"
+}

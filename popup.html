@@ -1,61 +1,98 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <style>
-    body {
-      font-family: Arial;
-      padding: 10px;
-      width: 200px;
-    }
-
-    input {
-      width: 100%;
-      margin-bottom: 8px;
-      padding: 4px;
-    }
-
-    button {
-      width: 100%;
-      padding: 6px;
-    }
-
-    label {
-      font-size: 13px;
-      display: block;
-      margin-bottom: 2px;
-    }
-
-    #hint {
-      color: #555;
-      font-size: 12px;
-      line-height: 1.4;
-      margin: 0 0 8px;
-    }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Measurement Matcher</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-
-  <label>Waist (inches)</label>
-  <input type="number" id="waist" step="0.1">
-
-  <label>Bust (inches)</label>
-  <input type="number" id="bust" step="0.1">
-
-  <label>Tolerance (+/- inches)</label>
-  <input type="number" id="tolerance" step="0.1">
-
-  <p id="hint">
-    Leave an unused measurement blank. Save &amp; apply restarts matching with your changes.
-    Reload page restarts matching with your saved settings.
-  </p>
-
-  <button id="save">Save &amp; apply</button>
-  <button id="reload" style="margin-top: 8px">Reload page</button>
-  <p id="settings-status" role="status" style="font-size: 12px"></p>
-
-  <button id="export" style="margin-top: 8px">Export checked listings</button>
-  <p id="export-status" role="status" style="font-size: 12px"></p>
-
+  <header>
+    <img src="icons/icon-48.png" width="36" height="36" alt="">
+    <div><h1>Measurement Matcher</h1><p>Find your fit on TheRealReal.</p></div>
+  </header>
+  <main>
+    <section aria-labelledby="measurements-heading">
+      <form id="settings-form" method="post" action="popup.html" novalidate>
+      <h2 id="measurements-heading">Your measurements</h2>
+      <p id="hint">All measurements are optional and use inches. Leave unused fields blank. Missing listing measurements are skipped. At least one entered, applicable measurement must be available to establish a match. Enter smaller/larger allowances as positive amounts, or 0 for no allowance.</p>
+      <fieldset aria-describedby="hint waist-range">
+        <legend>Waist</legend>
+        <div class="measurement-row">
+          <div><label for="waist">Measurement</label><input type="number" id="waist" name="waist" autocomplete="off" aria-describedby="hint waist-range" min="0.01" step="any" inputmode="decimal"></div>
+          <div><label for="waistSmaller">Smaller by</label><input type="number" id="waistSmaller" name="waistSmaller" autocomplete="off" aria-describedby="hint waist-range" min="0" step="any" inputmode="decimal"></div>
+          <div><label for="waistLarger">Larger by</label><input type="number" id="waistLarger" name="waistLarger" autocomplete="off" aria-describedby="hint waist-range" min="0" step="any" inputmode="decimal"></div>
+        </div>
+        <p id="waist-range" class="range" role="status">Leave measurement blank to ignore it.</p>
+      </fieldset>
+      <fieldset aria-describedby="hint bust-range bust-hint">
+        <legend>Bust</legend>
+        <div class="measurement-row">
+          <div><label for="bust">Measurement</label><input type="number" id="bust" name="bust" autocomplete="off" aria-describedby="hint bust-range" min="0.01" step="any" inputmode="decimal"></div>
+          <div><label for="bustSmaller">Smaller by</label><input type="number" id="bustSmaller" name="bustSmaller" autocomplete="off" aria-describedby="hint bust-range" min="0" step="any" inputmode="decimal"></div>
+          <div><label for="bustLarger">Larger by</label><input type="number" id="bustLarger" name="bustLarger" autocomplete="off" aria-describedby="hint bust-range" min="0" step="any" inputmode="decimal"></div>
+        </div>
+        <p id="bust-range" class="range" role="status">Leave measurement blank to ignore it.</p>
+        <p id="bust-hint" class="range">Ignored for jeans, pants, shorts, and skirts. Keep it saved for tops and dresses.</p>
+      </fieldset>
+      <fieldset aria-describedby="hint hip-range hip-hint">
+        <legend>Hip (optional)</legend>
+        <div class="measurement-row">
+          <div><label for="hip">Measurement</label><input type="number" id="hip" name="hip" autocomplete="off" aria-describedby="hint hip-range" min="0.01" step="any" inputmode="decimal"></div>
+          <div><label for="hipSmaller">Smaller by</label><input type="number" id="hipSmaller" name="hipSmaller" autocomplete="off" aria-describedby="hint hip-range" min="0" step="any" inputmode="decimal"></div>
+          <div><label for="hipLarger">Larger by</label><input type="number" id="hipLarger" name="hipLarger" autocomplete="off" aria-describedby="hint hip-range" min="0" step="any" inputmode="decimal"></div>
+        </div>
+        <p id="hip-range" class="range" role="status">Leave measurement blank to ignore it.</p>
+        <p id="hip-hint" class="range">Applied across clothing categories when reported. Missing hip values are ignored.</p>
+      </fieldset>
+      <details id="pants-measurements">
+        <summary>Inseam, rise &amp; leg opening</summary>
+      <fieldset aria-describedby="hint inseam-range inseam-hint">
+        <legend>Inseam (optional)</legend>
+        <div class="measurement-row">
+          <div><label for="inseam">Measurement</label><input type="number" id="inseam" name="inseam" autocomplete="off" aria-describedby="hint inseam-range" min="0.01" step="any" inputmode="decimal"></div>
+          <div><label for="inseamSmaller">Smaller by</label><input type="number" id="inseamSmaller" name="inseamSmaller" autocomplete="off" aria-describedby="hint inseam-range" min="0" step="any" inputmode="decimal"></div>
+          <div><label for="inseamLarger">Larger by</label><input type="number" id="inseamLarger" name="inseamLarger" autocomplete="off" aria-describedby="hint inseam-range" min="0" step="any" inputmode="decimal"></div>
+        </div>
+        <p id="inseam-range" class="range" role="status">Leave measurement blank to ignore it.</p>
+        <p id="inseam-hint" class="range">Ignored for dresses. For other items, applied only when an inseam is reported. With inseam alone, an absent or inapplicable value is undetermined.</p>
+      </fieldset>
+      <fieldset aria-describedby="hint rise-range rise-hint">
+        <legend>Rise (pants)</legend>
+        <div class="measurement-row">
+          <div><label for="rise">Measurement</label><input type="number" id="rise" name="rise" autocomplete="off" aria-describedby="hint rise-range" min="0.01" step="any" inputmode="decimal"></div>
+          <div><label for="riseSmaller">Smaller by</label><input type="number" id="riseSmaller" name="riseSmaller" autocomplete="off" aria-describedby="hint rise-range" min="0" step="any" inputmode="decimal"></div>
+          <div><label for="riseLarger">Larger by</label><input type="number" id="riseLarger" name="riseLarger" autocomplete="off" aria-describedby="hint rise-range" min="0" step="any" inputmode="decimal"></div>
+        </div>
+        <p id="rise-range" class="range" role="status">Leave measurement blank to ignore it.</p>
+        <p id="rise-hint" class="range">Pants, jeans, and trousers only; applied when reported. Uses rise/front rise, not back rise.</p>
+      </fieldset>
+      <fieldset aria-describedby="hint legOpening-range legOpening-hint">
+        <legend>Leg opening (pants)</legend>
+        <div class="measurement-row">
+          <div><label for="legOpening">Measurement</label><input type="number" id="legOpening" name="legOpening" autocomplete="off" aria-describedby="hint legOpening-range" min="0.01" step="any" inputmode="decimal"></div>
+          <div><label for="legOpeningSmaller">Smaller by</label><input type="number" id="legOpeningSmaller" name="legOpeningSmaller" autocomplete="off" aria-describedby="hint legOpening-range" min="0" step="any" inputmode="decimal"></div>
+          <div><label for="legOpeningLarger">Larger by</label><input type="number" id="legOpeningLarger" name="legOpeningLarger" autocomplete="off" aria-describedby="hint legOpening-range" min="0" step="any" inputmode="decimal"></div>
+        </div>
+        <p id="legOpening-range" class="range" role="status">Leave measurement blank to ignore it.</p>
+        <p id="legOpening-hint" class="range">Pants, jeans, and trousers only; applied when reported. Enter the listing’s inch value; no width/circumference conversion is made.</p>
+      </fieldset>
+      </details>
+      <p class="hint">Save &amp; apply restarts matching. Reload page uses saved settings.</p>
+      <div class="actions"><button id="save" type="submit">Save &amp; apply</button><button id="reload" type="button" class="secondary">Reload page</button></div>
+      <p id="settings-status" class="status" role="status"></p>
+      </form>
+    </section>
+    <section aria-labelledby="listings-heading">
+      <h2 id="listings-heading">Checked listings</h2>
+      <p id="data-disclosure">Checked product and search-page URLs, dates, garment details, results, and measurements used are saved on this device. CSV exports include all saved history, including earlier scans. Sizing preferences may sync through Chrome. No data is sent to the developer.</p>
+      <button id="export" type="button" class="secondary wide">Export checked listings</button>
+      <button id="clear" type="button" class="text-button">Clear checked listings…</button>
+      <p id="export-status" class="status" role="status"></p>
+    </section>
+  </main>
+  <footer><a href="privacy.html" target="_blank" rel="noopener">Privacy &amp; data</a><span>Independent tool · Not affiliated with TRR</span></footer>
+  <script src="matching.js"></script>
   <script src="checked-listings.js"></script>
   <script src="popup.js"></script>
 </body>
