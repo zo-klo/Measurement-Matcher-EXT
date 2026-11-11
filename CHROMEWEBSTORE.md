@@ -1,6 +1,6 @@
 # Chrome Web Store — Measurement Matcher
 
-Last updated: November 11, 2026. Candidate: **1.9.2**. Status: **ready for dashboard preparation**.
+Last updated: November 11, 2026. Candidate: **1.9.2**. Status: **Chrome Web Store draft saved**.
 
 This is the single source of truth for the listing, permissions, privacy declarations, and submission readiness. Developer registration and non-trader status are already complete.
 
@@ -10,12 +10,14 @@ This is the single source of truth for the listing, permissions, privacy declara
 - [x] Local executable code only; original PNG icons; bundled privacy disclosure and confirmed observation deletion.
 - [x] 177 automated checks, runtime syntax checks, mirror parity, exact ZIP contents, and ZIP integrity pass.
 - [x] Release ZIP: `dist/measurement-matcher-1.9.2.zip` (39,436 bytes); SHA-256 `58916b84185511296182a650ecab8cc162c7fe041124e8094b7a8398c420fadc`.
-- [ ] Merge the reviewed release/policy into the public repository, then verify the policy URL anonymously.
+- [x] Merge the release and policy into the public repository and verify that the policy loads anonymously.
 - [x] Live TRR spot checks recorded for a filtered results page, a direct product match, missing knitwear measurements, and an out-of-range coat.
 - [x] Two 1280×800 screenshots captured with demonstration measurements.
-- [ ] Review publisher contact, data declarations, distribution, and dashboard draft; upload and submit for review.
+- [x] Upload the ZIP, store icon, and two screenshots. Save the listing, privacy disclosures, and reviewer test instructions.
+- [x] Save the publisher’s three data-use certifications.
+- [ ] Verify the publisher contact and submit for review.
 
-The public repository is [Measurement Matcher EXT](https://github.com/zo-klo/Measurement-Matcher-EXT). [Pull request #1](https://github.com/zo-klo/Measurement-Matcher-EXT/pull/1) contains the release update. Publication depends on Chrome’s review.
+The public repository is [Measurement Matcher EXT](https://github.com/zo-klo/Measurement-Matcher-EXT). [Pull request #1](https://github.com/zo-klo/Measurement-Matcher-EXT/pull/1) contains the release update. Chrome Web Store item ID: `oiogmchnbpebanjkndjncckiejjjmdib`. Publication depends on Chrome’s review.
 
 ## Store listing
 
@@ -29,37 +31,17 @@ Filter TheRealReal clothing by waist, bust, hip, inseam, rise, and leg opening. 
 
 ## Detailed description
 
-Shop TheRealReal using garment measurements alongside tagged sizes. Measurement Matcher compares listed waist, bust, hip, inseam, rise, and leg-opening measurements with the measurements and directional allowances you enter, then filters supported product grids to help you find items in your chosen range.
+Sizes like S, M, and L only tell you so much. Measurement Matcher helps you find better-fitting clothes on TheRealReal, a luxury resale site, by comparing the measurements in each listing with the ranges you choose.
 
-HOW IT WORKS
+Start with whatever matters for the garment you’re shopping for: waist, bust, hip, inseam, rise, or leg opening. You can give each measurement a different allowance in either direction. For example, for a 28-inch waist you might allow 0.25 inches smaller and 1.5 inches larger.
 
-• All six measurements are optional. Missing listing values are skipped. A match needs at least one entered, applicable measurement to compare and no known mismatch; otherwise, with nothing comparable, it is undetermined.
+Save your settings and the extension checks clothing listings as you browse. See what matched, what was outside your range, and which items couldn’t be compared. Select Find more matches to check more listings in the same search. The matcher skips bags, shoes, and accessories.
 
-• Enter your desired measurements in inches: waist, bust, hip, inseam, rise, and/or leg opening. Leave a field blank to ignore it.
-• Set separate Smaller by and Larger by allowances for each measurement. A 28-inch waist with 0.25 smaller and 1.5 larger accepts garments measuring 27.75–29.5 inches at the waist, including both endpoints.
-• Dresses ignore inseam entirely. For other categories, inseam applies only when the listing reports it. Otherwise bust/waist matching stays unchanged, including for garments with no inseam. With inseam alone, an absent value is undetermined.
-• Keep bust saved while shopping for jeans, pants, shorts, or skirts: bust is automatically ignored for recognized bottoms. Waist and any reported, configured inseam still apply. Other garments compare bust when it is available.
-• Hip applies across clothing categories when reported. Rise and leg opening apply only to pants, jeans, and trousers when reported. Each has its own smaller/larger allowances; missing optional values are skipped. No width/circumference conversion is made.
-• Save & apply restarts matching on the current TRR page. Reload page starts again with your saved settings.
-• Bags, shoes, and accessories are skipped before measurement requests. Recognized sections stay idle with TRR's own grid and pagination; mixed results check eligible clothing only. Skipped products create no new CSV rows or undetermined counts.
-• Matching products appear in the filtered grid. Items confirmed outside the range are hidden. If no matches are found on the current page, the extension can check up to five subsequent results pages for a match.
-• Previous and Next browse checked results, with up to 24 listings per page. Find more matches checks additional listings in the same search. Page totals reflect the results checked so far, rather than TRR's unfiltered catalog.
+Want to keep a record of what you checked? Export checked listings downloads a CSV with listing links, dates, measurements, match results, and available details like price, fabric, and condition. You can clear saved listings from the popup.
 
-CHECKED LISTING HISTORY AND CSV DOWNLOAD
+Checked listings stay in this Chrome installation. Your sizing preferences can sync through Chrome. The extension uses your existing TheRealReal browsing session and compares measurements in your browser. It has no developer-operated server, ads, or analytics.
 
-As it checks products, the extension saves dated observations on your device: product URLs and available item IDs, scan identifiers and starting-page URLs, garment measurements, the measurements and twelve directional allowances used, which optional comparisons were applied, measurement differences, and match results. Price, currency, designer, sale information, fabric composition, and garment condition are included when extractable. This history includes products checked from results pages, even if you did not open them individually.
-
-Use Export checked listings to download all saved observations as CSV for a spreadsheet or a manual PostgreSQL import. Clear checked listings removes saved observations after confirmation; open TRR pages can save new checks.
-
-PRIVACY
-
-Sizing preferences may sync through Chrome when Chrome sync is enabled. Checked listing observations stay in this Chrome installation. The extension requests TRR product pages using your existing browsing session, compares measurements inside the extension, and does not send your measurements or listing history to the developer. No analytics, advertising, or developer-operated server is included. The popup links to the full privacy policy.
-
-PLEASE KNOW
-
-Measurement Matcher supports TheRealReal only. Measurements and product details depend on what the site provides and the extension can extract; some fields may be unavailable. If TRR blocks or rate-limits measurement requests, checks pause and unverified listings remain visible with a label. This extension does not bypass site access controls. Measurements are a shopping aid, not a guarantee of fit.
-
-Independent tool. Not affiliated with or endorsed by TheRealReal.
+Fit depends on the measurements available for each garment. Measurement Matcher is independent and is not affiliated with or endorsed by TheRealReal.
 
 ## Other dashboard fields
 
@@ -71,14 +53,14 @@ Independent tool. Not affiliated with or endorsed by TheRealReal.
 - Support: https://github.com/zo-klo/Measurement-Matcher-EXT/issues
 - Contact email: zfrazerklo@gmail.com, carried forward from the existing project; publisher should confirm.
 - Publisher display name: use the registered publisher identity; verify in the dashboard.
-- Visibility: Public is the intended launch; select regions and price in the dashboard after review.
+- Distribution: Free of charge, public, and all regions, using the dashboard defaults.
 - Publishing: deferred/manual publishing is available if approval should precede public availability.
 
 ## Privacy policy
 
 Source: [PRIVACY.md](PRIVACY.md). The build produces identical bundled `privacy.html` and hostable `store/privacy-policy.html` copies.
 
-Dashboard privacy policy URL: [Measurement Matcher Privacy Policy](https://github.com/zo-klo/Measurement-Matcher-EXT/blob/main/PRIVACY.md). Verify anonymous access after the release merge.
+Dashboard privacy policy URL: [Measurement Matcher Privacy Policy](https://github.com/zo-klo/Measurement-Matcher-EXT/blob/main/PRIVACY.md). An unauthenticated fetch matched the policy source after the release merge.
 
 ## Permission justifications
 
@@ -93,10 +75,9 @@ The dashboard disclosures must include data handled locally as well as data sent
 
 - Web history: checked TRR product URLs and observation dates, including pages fetched to compare products.
 - Website content: garment measurements, prices, brand, condition, fabric, and other extracted listing details.
-- Health information: conservatively disclose the user-entered physical body measurements (waist, bust, hip, inseam, rise, and leg opening). No diagnosis or medical records are involved.
+- Sizing preferences: the user enters waist, bust, hip, inseam, rise, leg opening, and directional allowances to compare clothing. The listing and policy describe these inputs and Chrome sync. The dashboard’s Health information category is unchecked because the inputs are used for clothing fit.
 - No names, email addresses, payment details, precise location, private communications, passwords, or cookie values are extracted or stored by the extension. A listing's public price is not the user's payment information. Normal same-origin page requests may carry Chrome-managed session cookies.
 - No click, scroll, keystroke, or mouse tracking is implemented; entering measurement preferences is described above.
-- The three Limited Use certifications can be affirmed for this code: data is not sold; it is used only for the stated single purpose; it is not used for creditworthiness or lending. Review the exact current wording before certifying.
 
 ### Data flow for dashboard review
 
@@ -107,11 +88,11 @@ The dashboard disclosures must include data handled locally as well as data sent
 | Extracted garment details and comparison results | Chrome local observations | Read from TRR; exported only when the user downloads a CSV |
 | CSV | User's download location | Any later import, sharing, or folder backup is controlled by the user |
 
-The code supports the following certifications, but the publisher must review the exact dashboard wording before attesting:
+The publisher reviewed and confirmed the three data-use certifications, which were saved on November 11:
 
-- [ ] Data is not sold to third parties.
-- [ ] Data is not used for purposes unrelated to the extension's single purpose.
-- [ ] Data is not used for creditworthiness or lending.
+- [x] Data is not sold or transferred outside approved use cases.
+- [x] Data is not used for purposes unrelated to the extension's single purpose.
+- [x] Data is not used for creditworthiness or lending.
 
 ## Graphics and assets
 
@@ -120,7 +101,7 @@ The code supports the following certifications, but the publisher must review th
 | Store icon | 128×128 PNG | Ready, with transparent padding | `icons/icon-128.png` |
 | Filtered results screenshot | 1280×800 JPEG | Ready | [Filtered results](store/screenshot-filtered-results-1280x800.jpg) |
 | Individual product screenshot | 1280×800 JPEG | Ready | [Product match](store/screenshot-product-match-1280x800.jpg) |
-| Small promotional tile | 440×280 PNG | Ready, optional | `store/promo-small-440x280.png` |
+| Small promotional tile | 440×280 PNG | Available, optional | `store/promo-small-440x280.png` |
 
 The first screenshot shows the settings popup, filtered grid, and 17 matches from 120 checked products. The second shows an individual garment match alongside TRR’s waist and hip measurements. Both are actual captures from the publisher’s November 11 browser test.
 
@@ -137,6 +118,8 @@ Current behavior also includes six optional measurements, directional allowances
 Known limits: TRR can change markup, omit measurements, or block requests; unknown data is not proof of fit. Chrome local storage has a quota. History includes older scans until cleared; exporting today does not mean all rows were checked today. Live spot checks establish the flows listed above. The reviewer scenarios below include additional coverage for pagination, optional measurements, and category handling.
 
 ## Reviewer test instructions
+
+The dashboard’s 500-character field contains the short waist, filtered listing, and CSV walkthrough. Use the fuller scenarios below for release verification.
 
 1. Install version 1.9.2 and pin Measurement Matcher to the toolbar.
 2. Open the popup. Enter waist 28, leave bust blank, and set waist Smaller by to 0.25 and Larger by to 1.5. Click Save & apply on a TRR results page. The requested waist range is inclusive, 27.75–29.5 inches.
