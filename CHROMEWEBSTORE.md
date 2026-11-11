@@ -1,6 +1,6 @@
 # Chrome Web Store — Measurement Matcher
 
-Last updated: November 11, 2026. Candidate: **1.9.2**. Status: **Chrome Web Store draft saved**.
+Last updated: November 11, 2026. Candidate: **1.9.2**. Status: **Chrome Web Store pending review**.
 
 This is the single source of truth for the listing, permissions, privacy declarations, and submission readiness. Developer registration and non-trader status are already complete.
 
@@ -15,7 +15,7 @@ This is the single source of truth for the listing, permissions, privacy declara
 - [x] Two 1280×800 screenshots captured with demonstration measurements.
 - [x] Upload the ZIP, store icon, and two screenshots. Save the listing, privacy disclosures, and reviewer test instructions.
 - [x] Save the publisher’s three data-use certifications.
-- [ ] Verify the publisher contact and submit for review.
+- [x] Verified the publisher contact and submitted version 1.9.2 on November 11, 2026. Chrome confirmed the item is pending review.
 
 The public repository is [Measurement Matcher EXT](https://github.com/zo-klo/Measurement-Matcher-EXT). [Pull request #1](https://github.com/zo-klo/Measurement-Matcher-EXT/pull/1) contains the release update. Chrome Web Store item ID: `oiogmchnbpebanjkndjncckiejjjmdib`. Publication depends on Chrome’s review.
 
@@ -109,7 +109,7 @@ The first screenshot shows the settings popup, filtered grid, and 17 matches fro
 
 | Version | Date | Changes | Status |
 | --- | --- | --- | --- |
-| 1.9.2 | 2026-11-09 | Publishing audit: sanitized product-card insertion with a plain DOM fallback, same-origin paging guard, coalesced progress/grid updates, accessible form submission and validation, awaited preference initialization, explicit CSP and Chrome 99 minimum | Draft; not submitted |
+| 1.9.2 | 2026-11-09 | Publishing audit: sanitized product-card insertion with a plain DOM fallback, same-origin paging guard, coalesced progress/grid updates, accessible form submission and validation, awaited preference initialization, explicit CSP and Chrome 99 minimum | Pending review as of 2026-11-11 |
 
 Current behavior also includes six optional measurements, directional allowances, category applicability, non-clothing exclusions, checked-result pagination, left-side progress, and CSV history with condition/fabric metadata.
 

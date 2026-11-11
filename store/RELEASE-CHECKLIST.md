@@ -16,13 +16,13 @@ Updated November 11, 2026. This is a release candidate, not a claim of Chrome We
 
 ## Required before submission
 
-- [ ] Confirm the public name and support contact, and review the supplied policy and data declarations against your intended release practices.
+- [x] Confirmed the listing and data-use disclosures with the publisher.
 - [x] Merged `PRIVACY.md` into the public repository, verified anonymous access, and entered its URL in the dashboard.
 - [x] Live TRR spot checks: filtered grid, direct product match, missing-measurement handling, and a garment outside the saved range.
 - [x] Capture actual screenshots using demonstration measurements. [Filtered results](screenshot-filtered-results-1280x800.jpg) and [product match](screenshot-product-match-1280x800.jpg) are both 1280×800 JPEGs.
-- [ ] In the developer dashboard, verify account contact email and 2-Step Verification are complete if prompted. Registration/non-trader setup does not need repeating.
+- [x] Verified the publisher contact email in the developer dashboard.
 - [x] Uploaded the 1.9.2 ZIP, store icon, and both screenshots. Saved the listing, privacy disclosures, and reviewer test instructions. Distribution is free and public in all regions.
-- [ ] Choose deferred/manual publishing if you want approval to precede public availability. Review the finished draft before Submit for review. Nothing is uploaded, submitted, or published by the local build script.
+- [x] Submitted 1.9.2 on November 11, 2026. The dashboard confirmed Pending review.
 
 ## Additional live regression coverage
 
