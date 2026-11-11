@@ -1,6 +1,6 @@
 # Chrome Web Store — Measurement Matcher
 
-Last updated: November 9, 2026. Candidate: **1.9.2**. Status: **prepared locally; not submitted**.
+Last updated: November 11, 2026. Candidate: **1.9.2**. Status: **ready for dashboard preparation**.
 
 This is the single source of truth for the listing, permissions, privacy declarations, and submission readiness. Developer registration and non-trader status are already complete.
 
@@ -11,13 +11,11 @@ This is the single source of truth for the listing, permissions, privacy declara
 - [x] 177 automated checks, runtime syntax checks, mirror parity, exact ZIP contents, and ZIP integrity pass.
 - [x] Release ZIP: `dist/measurement-matcher-1.9.2.zip` (39,436 bytes); SHA-256 `58916b84185511296182a650ecab8cc162c7fe041124e8094b7a8398c420fadc`.
 - [ ] Merge the reviewed release/policy into the public repository, then verify the policy URL anonymously.
-- [ ] Complete the current-version live TRR checks below. Fixtures do not establish compatibility with today's website.
-- [ ] Capture at least one actual extension screenshot at 1280×800 or 640×400, without personal measurements or account details.
+- [x] Live TRR spot checks recorded for a filtered results page, a direct product match, missing knitwear measurements, and an out-of-range coat.
+- [x] Two 1280×800 screenshots captured with demonstration measurements.
 - [ ] Review publisher contact, data declarations, distribution, and dashboard draft; upload and submit for review.
 
-The canonical public repository is https://github.com/zo-klo/Measurement-Matcher-EXT, verified public on November 9. Its existing main branch has version 1.2; this release should be reviewed in a draft PR before merging. No repository visibility change is required.
-
-Submission by November 10 is a practical target once these items are complete. Publication depends on Chrome's review: typically a few days, sometimes a few weeks. No review date is guaranteed.
+The public repository is [Measurement Matcher EXT](https://github.com/zo-klo/Measurement-Matcher-EXT). [Pull request #1](https://github.com/zo-klo/Measurement-Matcher-EXT/pull/1) contains the release update. Publication depends on Chrome’s review.
 
 ## Store listing
 
@@ -80,10 +78,7 @@ Independent tool. Not affiliated with or endorsed by TheRealReal.
 
 Source: [PRIVACY.md](PRIVACY.md). The build produces identical bundled `privacy.html` and hostable `store/privacy-policy.html` copies.
 
-Planned stable public URL after merge:
-https://github.com/zo-klo/Measurement-Matcher-EXT/blob/main/PRIVACY.md
-
-**This URL is not ready yet:** main does not contain the policy. After merging, verify it loads without a GitHub sign-in before entering it in the dashboard. GitHub Pages is not required for a publicly readable policy document.
+Dashboard privacy policy URL: [Measurement Matcher Privacy Policy](https://github.com/zo-klo/Measurement-Matcher-EXT/blob/main/PRIVACY.md). Verify anonymous access after the release merge.
 
 ## Permission justifications
 
@@ -123,10 +118,11 @@ The code supports the following certifications, but the publisher must review th
 | Asset | Dimensions | Status | File |
 | --- | --- | --- | --- |
 | Store icon | 128×128 PNG | Ready, with transparent padding | `icons/icon-128.png` |
-| Screenshot | 1280×800 or 640×400 | Required; pending actual capture | — |
+| Filtered results screenshot | 1280×800 JPEG | Ready | [Filtered results](store/screenshot-filtered-results-1280x800.jpg) |
+| Individual product screenshot | 1280×800 JPEG | Ready | [Product match](store/screenshot-product-match-1280x800.jpg) |
 | Small promotional tile | 440×280 PNG | Ready, optional | `store/promo-small-440x280.png` |
 
-Capture the real popup and/or filtered TRR grid, using demonstration values. Show the left-side progress panel and checked-result navigation where possible. A blocked page or a mockup is not verification of working filtering.
+The first screenshot shows the settings popup, filtered grid, and 17 matches from 120 checked products. The second shows an individual garment match alongside TRR’s waist and hip measurements. Both are actual captures from the publisher’s November 11 browser test.
 
 ## Version history and verification
 
@@ -136,9 +132,9 @@ Capture the real popup and/or filtered TRR grid, using demonstration values. Sho
 
 Current behavior also includes six optional measurements, directional allowances, category applicability, non-clothing exclusions, checked-result pagination, left-side progress, and CSV history with condition/fabric metadata.
 
-177 deterministic checks pass across both loadable copies. Fourteen new checks cover safe card construction, progress/grid frame scheduling and stale work, off-origin rejection, form submission/focused errors, and failed preference reads. Native Sanitizer invocation is tested with a mock; its actual browser rendering still needs the live check. On Chrome without native `setHTML`, cards use a simpler text/image/link layout built through DOM APIs. No runtime dependency was added.
+177 deterministic checks pass across both loadable copies. Fourteen new checks cover safe card construction, progress/grid frame scheduling and stale work, off-origin rejection, form submission/focused errors, and failed preference reads. Automated fixtures cover native Sanitizer invocation. The November 11 results screenshot shows the rendered filtered grid during the publisher’s browser test. On Chrome without native `setHTML`, cards use a simpler text/image/link layout built through DOM APIs. No runtime dependency was added.
 
-Known limits: TRR can change markup, omit measurements, or block requests; unknown data is not proof of fit. Chrome local storage has a quota. History includes older scans until cleared; exporting today does not mean all rows were checked today. The latest candidate has not completed an independent end-to-end browser run. No CWS upload, legal attestation, submission, or publication has occurred. No rejection history is known.
+Known limits: TRR can change markup, omit measurements, or block requests; unknown data is not proof of fit. Chrome local storage has a quota. History includes older scans until cleared; exporting today does not mean all rows were checked today. Live spot checks establish the flows listed above. The reviewer scenarios below include additional coverage for pagination, optional measurements, and category handling.
 
 ## Reviewer test instructions
 
