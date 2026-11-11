@@ -1,76 +1,23 @@
-# TRR Measurement Matcher EXT
+# Measurement Matcher
 
-As a big fan of second-hand shopping and the luxury consignment site TheRealReal, I found myself constantly having to check product measurements, even when I filtered by size. I decided to build Measurement Matcher for my own personal use, inspired by sites like [Secondsense](https://secondsense.co/), who do a great service to the second-hand fashion community. Vintage sizing is notoriously inconsistent; The purpose of this project is to improve the user experience of second-hand shoppers by enabling shoppers to filter products according to clothing measurements rather than label size.
+A Chrome extension that compares TheRealReal garment measurements with saved waist, bust, hip, inseam, rise, and leg-opening preferences, supports independent smaller/larger allowances for each measurement, filters supported product grids, and saves checked listing observations for CSV download.
 
-## What It Does
+See [the project README](Measurement%20Matcher%20EXT/README.md) for the shopping workflow and [export specifications](EXPORTS.md) for CSV fields. This root directory is the source of truth for runtime code; the build keeps the older loadable `Measurement Matcher EXT` copy in sync.
 
-Measurement Matcher is a Chrome extension built to help shoppers browse resale listings with more confidence. Instead of relying on a tagged size like `S`, `M`, or `8`, the extension compares a shopper's saved waist and bust measurements against the measurements listed on product pages.
+Checked results now use their own **Previous / Next** controls with 24 listings per page. **Find more matches** continues checking additional TRR listings in the same scan. Result-page totals reflect the checked pool; changing the source search or sort starts a fresh scan.
 
-When a listing page is loaded, the extension:
+The matcher automatically stays idle in recognized bags, shoes, and accessories sections. Those products are also skipped before measurement requests in mixed results and later-page checks, leaving them out of saved observations and outcome counts.
 
-- checks product measurements in the background
-- filters the grid to show matching products first
-- hides items outside the selected range
-- can pull in matching products from later pages when the current page has no matches
-- saves dated observations of checked listings locally and lets users download them as a CSV
+Bust is automatically ignored for recognized jeans, pants, shorts, and skirts. Keep bust saved for other garments; bottoms use waist and any reported, configured inseam. Dresses ignore inseam entirely. Hip applies across clothing when reported; rise and leg opening apply to recognized pants/jeans/trousers when reported. All six measurements are optional: missing listing values are skipped. A match needs at least one entered, applicable value to compare and no known mismatch.
 
-## How It Works
+## Chrome Web Store release
 
-Users enter:
+Version 1.9.2 is prepared as a release candidate. Run:
 
-- waist measurement
-- bust measurement
-- tolerance in inches
+```sh
+python3 scripts/build_release.py
+```
 
-The extension stores those preferences, reads measurement details from supported product pages, and filters product grids based on whether an item falls within the shopper's preferred range.
+The build runs the regression tests and JavaScript syntax checks, then creates `dist/measurement-matcher-1.9.2.zip` with the manifest at the ZIP root. It needs Python 3 and Node.js; no dependency installation is needed for packaging.
 
-**Development note**: I developed this as a personal project and used LLM assistance with the JavaScript implementation. The shopping problem, measurement-based matching criteria, and feature decisions came from my own experience using resale sites.
-
-## Project Goal
-
-The goal of this project is to make resale shopping faster, less frustrating, and more accessible for people who need clothing to match their actual measurements, not just a nominal size tag. This is especially important for women outside of the standard size range, or with proportions that do not match typical industry patterns. 
-
-Eventually, we intend to expand Measurement Matcher compatibility to include other measurements and other popular sites. Please reach out to zfrazerklo@gmail.com for more information.
-
-## Export checked listings
-
-The extension records garments as the matcher checks them, including products checked from later results pages and product pages opened directly. Use the popup's **Export checked listings** button to download the saved observations for spreadsheet analysis or import into PostgreSQL.
-
-### Download workflow
-
-1. Enter waist, bust, and tolerance in the popup, then click **Save & apply**. This saves the preferences and reloads the current TRR page to restart matching. Leave an unused measurement blank.
-2. Browse TRR with saved measurements. Each fresh product evaluation saves a dated observation. **Reload page** restarts the current page with already-saved settings without saving unsaved popup edits.
-3. Click **Export checked listings**. The browser downloads a UTF-8 CSV named `checked-listings-YYYY-MM-DD.csv`, containing all saved observations in chronological order. If no observations exist yet, the popup asks you to browse TRR first.
-
-Exporting keeps the saved observations, so they remain available for later downloads. Revisiting a product can produce another dated row; cached results within the same page are not saved again.
-
-### CSV fields
-
-The CSV includes a header row with these column names:
-
-| Column(s) | Contents |
-| --- | --- |
-| `product_url`, `item_id` | Product URL with query parameters and fragments removed; item ID when available. |
-| `observed_at` | Date and time checked, as an ISO 8601 UTC timestamp. |
-| `garment_bust`, `garment_waist` | Measurements extracted from the garment listing, in inches. |
-| `user_bust`, `user_waist`, `tolerance` | Saved measurements and allowance used for that check, in inches. |
-| `bust_difference`, `waist_difference` | Garment measurement minus user measurement, in inches; positive values mean the garment is larger. |
-| `result` | `match`, `not match`, or `undetermined`. |
-| `product_price`, `currency` | Observed listing price and currency when available. |
-| `on_sale` | `true` or `false` when explicit sale details or comparable original/current prices establish sale status; otherwise blank. |
-| `designer` | Garment designer or brand when available. |
-| `estimated_percent_off_retail` | Listed percentage off estimated retail, as a number such as `65` for 65%. |
-| `fabric_composition` | Listed fabric or material composition when available. |
-| `garment_condition` | Listed garment condition when available. |
-
-A `match` satisfies all configured measurements within the saved tolerance. A `not match` has at least one known requested measurement outside the range. `undetermined` means required measurements are missing and there is no known mismatch. Blank user measurements are ignored by matching; their differences are also blank.
-
-Missing data is stored as `null` and exported as empty fields. Prices, sale details, fabric, and condition depend on what the product page exposes and the extension can extract. CSV fields preserve commas, quotation marks, and line breaks; scraped text that could execute as a spreadsheet formula receives an apostrophe prefix.
-
-### Storage and availability
-
-Sizing preferences remain in `chrome.storage.sync`. Checked listing observations, including the preferences used for each check, are saved separately in `chrome.storage.local` on this Chrome installation and do not sync between devices. Records are subject to Chrome's local storage quota, are not automatically deleted, and are removed when the extension is uninstalled. The page status badge reports saving failures while filtering continues.
-
-Failed or denied product requests do not create garment observations. If TRR blocks or rate-limits measurement checks, the extension pauses further requests on that page, leaves unchecked listings visible and labeled, and reports incomplete filtering. Use **Reload page** later to retry.
-
-The downloaded CSV can be imported into PostgreSQL using your preferred tools. The extension does not connect directly to a database or include a SQL script. See [Checked listing exports](../EXPORTS.md) for additional implementation details and regression-check instructions.
+Use [the store submission document](CHROMEWEBSTORE.md) and [release checklist](store/RELEASE-CHECKLIST.md) to finish the submission. The [privacy policy](PRIVACY.md) is included in the popup and has a hostable HTML copy at `store/privacy-policy.html`. Before submission, a public policy URL, actual store screenshot, and current end-to-end TRR verification are still required. Building does not upload or publish the extension.

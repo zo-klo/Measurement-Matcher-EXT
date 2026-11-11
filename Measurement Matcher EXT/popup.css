@@ -1,0 +1,37 @@
+:root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172d34; background: #f7f9f8; }
+* { box-sizing: border-box; }
+body { width: 340px; margin: 0; padding: 14px 18px; font-size: 13px; line-height: 1.45; }
+header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+h1 { font-size: 17px; line-height: 1.2; margin: 0 0 3px; letter-spacing: -0.35px; }
+header p { margin: 0; color: #506368; font-size: 12px; }
+h2 { font-size: 13px; margin: 0 0 8px; }
+p { margin: 0 0 10px; }
+section + section { border-top: 1px solid #dce4e2; padding-top: 12px; margin-top: 12px; }
+label { display: block; margin-bottom: 4px; font-weight: 600; }
+input { width: 100%; min-height: 36px; margin-bottom: 10px; padding: 6px 9px; border: 1px solid #9aadaa; border-radius: 6px; background: #fff; color: inherit; font: inherit; }
+.measurement-row, .actions { display: flex; gap: 10px; }
+.measurement-row > div, .actions > button { flex: 1; min-width: 0; }
+button { border: 1px solid #156459; border-radius: 6px; background: #156459; color: white; font: inherit; font-weight: 600; min-height: 36px; padding: 7px 8px; cursor: pointer; }
+button:hover { filter: brightness(0.94); }
+button:disabled { opacity: 0.6; cursor: wait; }
+.secondary { background: #fff; color: #156459; }
+.wide { width: 100%; }
+.text-button { min-height: 32px; background: none; border: none; color: #855130; padding-left: 0; font-size: 12px; }
+:focus-visible { outline: 3px solid #38978c; outline-offset: 2px; }
+.hint, #hint, #data-disclosure { color: #506368; font-size: 12px; }
+.status { font-size: 12px; margin: 7px 0 0; }
+.status:empty { display: none; }
+footer { margin-top: 8px; font-size: 10px; color: #52676b; }
+footer a { color: #156459; font-size: 12px; }
+footer span { display: block; margin-top: 5px; }
+
+fieldset { margin: 0 0 10px; padding: 8px 10px 4px; border: 1px solid #dce4e2; border-radius: 6px; }
+legend { font-weight: 650; padding: 0 4px; }
+.measurement-row label { font-size: 11px; white-space: nowrap; }
+.measurement-row input { margin-bottom: 4px; }
+.range { font-size: 11px; color: #506368; margin: 2px 0 4px; }
+details { margin: 0 0 10px; }
+summary { color: #156459; font-weight: 600; cursor: pointer; padding: 5px 0 9px; }
+
+input[aria-invalid="true"] { border-color: #a1392f; outline: 2px solid #a1392f; outline-offset: 1px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }

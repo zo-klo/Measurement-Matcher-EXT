@@ -1,0 +1,12 @@
+# Local observations, analysis, and generated releases
+*.csv
+*.duckdb
+*.duckdb.wal
+*.Rproj
+.Rhistory
+.RData
+.Rproj.user/
+.DS_Store
+dist/
+node_modules/
+__pycache__/
