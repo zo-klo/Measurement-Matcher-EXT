@@ -14,7 +14,7 @@ Use **Pause matching** at the top of the popup to browse TRR normally. **Resume 
 
 ## Chrome Web Store release
 
-Version 1.9.2 is live on the Chrome Web Store. Version 1.10.0 adds pause and resume and is prepared as an update candidate. Run:
+Version 1.9.2 is live on the Chrome Web Store. Version 1.10.0 adds pause and resume and was submitted for review on November 19, 2026. Run:
 
 ```sh
 python3 scripts/build_release.py

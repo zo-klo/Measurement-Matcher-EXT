@@ -1,6 +1,6 @@
 # Chrome Web Store — Measurement Matcher
 
-Last updated: November 19, 2026. Published version: **1.9.2**, reported live by the publisher. Update candidate: **1.10.0**, prepared locally.
+Last updated: November 19, 2026. Published version: **1.9.2**. Version **1.10.0** was submitted for review on November 19, 2026, with automatic publishing after approval enabled.
 
 This is the single source of truth for the listing, permissions, privacy declarations, and submission readiness. Developer registration and non-trader status are already complete.
 
@@ -12,8 +12,8 @@ The popup now provides Pause matching and Resume matching. The preference is sav
 - [x] Existing observations remain available for export and deletion. Clearing observations preserves the pause preference.
 - [x] 199 automated checks, runtime syntax checks, mirror parity, and ZIP integrity passed.
 - [x] Built `dist/measurement-matcher-1.10.0.zip` (40,354 bytes), SHA-256 `0dace7434bb2ba3d6cfbcfbd2e87d68b018e05a6dda704e7ae7adf0b2f55c9b4`.
-- [ ] Verify the update’s pause/resume flow in Chrome.
-- [ ] Upload the new ZIP to the existing store item and submit the update for review.
+- [x] Loaded the 1.10.0 development copy in Chrome and verified its Pause matching control. The publisher approved the update after testing.
+- [x] Uploaded the new ZIP to the existing store item and submitted it for review. Chrome confirmed receipt on November 19. Automatic publishing after approval is enabled.
 
 ## Version 1.9.2 submission history
 
@@ -28,7 +28,7 @@ The popup now provides Pause matching and Resume matching. The preference is sav
 - [x] Save the publisher’s three data-use certifications.
 - [x] Verified the publisher contact and submitted version 1.9.2 on November 11, 2026. Chrome confirmed the item is pending review.
 
-The public repository is [Measurement Matcher EXT](https://github.com/zo-klo/Measurement-Matcher-EXT). [Pull request #1](https://github.com/zo-klo/Measurement-Matcher-EXT/pull/1) contains the release update. Chrome Web Store item ID: `oiogmchnbpebanjkndjncckiejjjmdib`. Publication depends on Chrome’s review.
+The public repository is [Measurement Matcher EXT](https://github.com/zo-klo/Measurement-Matcher-EXT). [Pull request #1](https://github.com/zo-klo/Measurement-Matcher-EXT/pull/1) contains the initial release. [Pull request #2](https://github.com/zo-klo/Measurement-Matcher-EXT/pull/2) contains the pause/resume update. Chrome Web Store item ID: `oiogmchnbpebanjkndjncckiejjjmdib`. Publication depends on Chrome’s review.
 
 ## Store listing
 
@@ -65,7 +65,7 @@ Fit depends on the measurements available for each garment. Measurement Matcher 
 - Contact email: zfrazerklo@gmail.com, carried forward from the existing project; publisher should confirm.
 - Publisher display name: use the registered publisher identity; verify in the dashboard.
 - Distribution: Free of charge, public, and all regions, using the dashboard defaults.
-- Publishing: deferred/manual publishing is available if approval should precede public availability.
+- Publishing: automatic publishing after approval is enabled for version 1.10.0.
 
 ## Privacy policy
 
@@ -120,7 +120,7 @@ The first screenshot shows the settings popup, filtered grid, and 17 matches fro
 
 | Version | Date | Changes | Status |
 | --- | --- | --- | --- |
-| 1.10.0 | 2026-11-19 | Popup pause/resume, local persistence, cancellation of active scans, native browsing restored by reload, and saving measurements while paused | Update candidate |
+| 1.10.0 | 2026-11-19 | Popup pause/resume, local persistence, cancellation of active scans, native browsing restored by reload, and saving measurements while paused | Submitted for review 2026-11-19 |
 | 1.9.2 | 2026-11-09 | Publishing audit: sanitized product-card insertion with a plain DOM fallback, same-origin paging guard, coalesced progress/grid updates, accessible form submission and validation, awaited preference initialization, explicit CSP and Chrome 99 minimum | Published, reported 2026-11-19 |
 
 Current behavior also includes six optional measurements, directional allowances, category applicability, non-clothing exclusions, checked-result pagination, left-side progress, and CSV history with condition/fabric metadata.
@@ -131,7 +131,7 @@ Known limits: TRR can change markup, omit measurements, or block requests; unkno
 
 ## Reviewer test instructions
 
-The dashboard’s 500-character field contains the short waist, filtered listing, and CSV walkthrough. Use the fuller scenarios below for release verification.
+The dashboard’s 500-character field contains the waist, filtered listing, pause/resume, and CSV walkthrough. Use the fuller scenarios below for release verification.
 
 1. Install version 1.10.0 and pin Measurement Matcher to the toolbar.
 2. Open the popup. Enter waist 28, leave bust blank, and set waist Smaller by to 0.25 and Larger by to 1.5. Click Save & apply on a TRR results page. The requested waist range is inclusive, 27.75–29.5 inches.

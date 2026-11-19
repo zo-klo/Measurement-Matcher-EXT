@@ -1,14 +1,14 @@
 # Release checklist — Measurement Matcher 1.10.0 update
 
-Updated November 19, 2026. Version 1.9.2 is live, as reported by the publisher. Version 1.10.0 is an update candidate. Developer registration and non-trader status are already handled by the publisher.
+Updated November 19, 2026. Version 1.9.2 is live, as reported by the publisher. Version 1.10.0 was submitted for review on November 19, with automatic publishing after approval enabled. Developer registration and non-trader status are already handled by the publisher.
 
 ## Pause/resume update
 
 - [x] Pause/resume remembers the local profile choice and reloads open TRR tabs.
 - [x] Active requests and product observers stop on pause. Late responses cannot save or render.
 - [x] Saving measurements while paused keeps scans off. Export and clear remain available.
-- [ ] Verify the popup, native grid restoration, multiple tabs, persistence, resume, and CSV history in Chrome.
-- [ ] Upload `dist/measurement-matcher-1.10.0.zip` through the existing store item and submit the update.
+- [x] Verified the new popup in the loaded Chrome development copy. The publisher approved the tested update.
+- [x] Uploaded `dist/measurement-matcher-1.10.0.zip` through the existing store item and submitted the update. Chrome confirmed submission. Automatic publishing after approval is enabled.
 
 ## Prepared in this workspace
 
