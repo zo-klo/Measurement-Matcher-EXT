@@ -10,14 +10,16 @@ The matcher automatically stays idle in recognized bags, shoes, and accessories 
 
 Bust is automatically ignored for recognized jeans, pants, shorts, and skirts. Keep bust saved for other garments; bottoms use waist and any reported, configured inseam. Dresses ignore inseam entirely. Hip applies across clothing when reported; rise and leg opening apply to recognized pants/jeans/trousers when reported. All six measurements are optional: missing listing values are skipped. A match needs at least one entered, applicable value to compare and no known mismatch.
 
+Use **Pause matching** at the top of the popup to browse TRR normally. **Resume matching** restarts with your saved measurements. The choice applies to this Chrome profile, persists between visits, and reloads all open TRR tabs when changed. You can save measurements, export history, and clear observations while paused.
+
 ## Chrome Web Store release
 
-Version 1.9.2 is prepared as a release candidate. Run:
+Version 1.9.2 is live on the Chrome Web Store. Version 1.10.0 adds pause and resume and is prepared as an update candidate. Run:
 
 ```sh
 python3 scripts/build_release.py
 ```
 
-The build runs the regression tests and JavaScript syntax checks, then creates `dist/measurement-matcher-1.9.2.zip` with the manifest at the ZIP root. It needs Python 3 and Node.js; no dependency installation is needed for packaging.
+The build runs the regression tests and JavaScript syntax checks, then creates `dist/measurement-matcher-1.10.0.zip` with the manifest at the ZIP root. It needs Python 3 and Node.js; no dependency installation is needed for packaging.
 
-Use [the store submission document](CHROMEWEBSTORE.md) and [release checklist](store/RELEASE-CHECKLIST.md) to finish the submission. The [privacy policy](PRIVACY.md) is included in the popup and has a hostable HTML copy at `store/privacy-policy.html`. Before submission, a public policy URL, actual store screenshot, and current end-to-end TRR verification are still required. Building does not upload or publish the extension.
+Use [the store submission document](CHROMEWEBSTORE.md) and [release checklist](store/RELEASE-CHECKLIST.md) to finish the submission. The [privacy policy](PRIVACY.md) is included in the popup and has a hostable HTML copy at `store/privacy-policy.html`. The update adds no permissions. Verify pause/resume in Chrome before uploading the new ZIP through the existing store item. Building does not upload or publish the extension.

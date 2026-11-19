@@ -1,10 +1,21 @@
 # Chrome Web Store — Measurement Matcher
 
-Last updated: November 11, 2026. Candidate: **1.9.2**. Status: **Chrome Web Store pending review**.
+Last updated: November 19, 2026. Published version: **1.9.2**, reported live by the publisher. Update candidate: **1.10.0**, prepared locally.
 
 This is the single source of truth for the listing, permissions, privacy declarations, and submission readiness. Developer registration and non-trader status are already complete.
 
-## Submission readiness
+## Version 1.10.0 update
+
+The popup now provides Pause matching and Resume matching. The preference is saved in local storage for this Chrome profile. Changing it stops active requests and reloads open TRR tabs. A paused page performs no garment checks or observation saves. Resume starts fresh scans with saved measurements. Saving measurements while paused keeps matching paused.
+
+- [x] Pause/resume regression coverage, including active requests, late responses, stale initial reads, multiple tabs, popup persistence, and storage errors.
+- [x] Existing observations remain available for export and deletion. Clearing observations preserves the pause preference.
+- [x] 199 automated checks, runtime syntax checks, mirror parity, and ZIP integrity passed.
+- [x] Built `dist/measurement-matcher-1.10.0.zip` (40,354 bytes), SHA-256 `0dace7434bb2ba3d6cfbcfbd2e87d68b018e05a6dda704e7ae7adf0b2f55c9b4`.
+- [ ] Verify the update’s pause/resume flow in Chrome.
+- [ ] Upload the new ZIP to the existing store item and submit the update for review.
+
+## Version 1.9.2 submission history
 
 - [x] Manifest V3; storage is the only API permission; site access is limited to `https://www.therealreal.com/*`.
 - [x] Local executable code only; original PNG icons; bundled privacy disclosure and confirmed observation deletion.
@@ -35,7 +46,7 @@ Sizes like S, M, and L only tell you so much. Measurement Matcher helps you find
 
 Start with whatever matters for the garment you’re shopping for: waist, bust, hip, inseam, rise, or leg opening. You can give each measurement a different allowance in either direction. For example, for a 28-inch waist you might allow 0.25 inches smaller and 1.5 inches larger.
 
-Save your settings and the extension checks clothing listings as you browse. See what matched, what was outside your range, and which items couldn’t be compared. Select Find more matches to check more listings in the same search. The matcher skips bags, shoes, and accessories.
+Save your settings and the extension checks clothing listings as you browse. See what matched, what was outside your range, and which items couldn’t be compared. Select Find more matches to check more listings in the same search. The matcher skips bags, shoes, and accessories. Use Pause matching in the popup whenever you want to browse normally. Resume matching starts again with your saved measurements. Your choice is remembered in this Chrome profile.
 
 Want to keep a record of what you checked? Export checked listings downloads a CSV with listing links, dates, measurements, match results, and available details like price, fabric, and condition. You can clear saved listings from the popup.
 
@@ -64,7 +75,7 @@ Dashboard privacy policy URL: [Measurement Matcher Privacy Policy](https://githu
 
 ## Permission justifications
 
-- `storage`: saves six measurement preferences and twelve directional allowances in `chrome.storage.sync`, and saves dated checked-listing observations in `chrome.storage.local` for CSV download and deletion.
+- `storage`: saves a local pause preference, six measurement preferences and twelve directional allowances in `chrome.storage.sync`, and saves dated checked-listing observations in `chrome.storage.local` for CSV download and deletion.
 - Site access/content scripts, `https://www.therealreal.com/*`: reads TRR garment details and product links, fetches same-origin product pages, and updates supported results grids and status messages. It does not access other websites.
 - Remote code: select **No**. All extension JavaScript ships in the ZIP. TRR HTML and JSON are parsed as data, not executed as downloaded extension code.
 - The extension does not request `tabs`, `downloads`, `history`, `cookies`, `<all_urls>`, or `unlimitedStorage`.
@@ -109,7 +120,8 @@ The first screenshot shows the settings popup, filtered grid, and 17 matches fro
 
 | Version | Date | Changes | Status |
 | --- | --- | --- | --- |
-| 1.9.2 | 2026-11-09 | Publishing audit: sanitized product-card insertion with a plain DOM fallback, same-origin paging guard, coalesced progress/grid updates, accessible form submission and validation, awaited preference initialization, explicit CSP and Chrome 99 minimum | Pending review as of 2026-11-11 |
+| 1.10.0 | 2026-11-19 | Popup pause/resume, local persistence, cancellation of active scans, native browsing restored by reload, and saving measurements while paused | Update candidate |
+| 1.9.2 | 2026-11-09 | Publishing audit: sanitized product-card insertion with a plain DOM fallback, same-origin paging guard, coalesced progress/grid updates, accessible form submission and validation, awaited preference initialization, explicit CSP and Chrome 99 minimum | Published, reported 2026-11-19 |
 
 Current behavior also includes six optional measurements, directional allowances, category applicability, non-clothing exclusions, checked-result pagination, left-side progress, and CSV history with condition/fabric metadata.
 
@@ -121,7 +133,7 @@ Known limits: TRR can change markup, omit measurements, or block requests; unkno
 
 The dashboard’s 500-character field contains the short waist, filtered listing, and CSV walkthrough. Use the fuller scenarios below for release verification.
 
-1. Install version 1.9.2 and pin Measurement Matcher to the toolbar.
+1. Install version 1.10.0 and pin Measurement Matcher to the toolbar.
 2. Open the popup. Enter waist 28, leave bust blank, and set waist Smaller by to 0.25 and Larger by to 1.5. Click Save & apply on a TRR results page. The requested waist range is inclusive, 27.75–29.5 inches.
 3. Use a current TRR clothing results page, for example `https://www.therealreal.com/sales/womens%20dresses`. TRR may require its own sign-in or human verification. The extension has no separate account, password, or subscription. Supply access instructions through the dashboard if the reviewer cannot reach product measurements; do not put personal TRR credentials in this file.
 4. Compare a retained listing's measurements with its actual product page. Listings known outside the range should be hidden. If TRR blocks requests, the status explicitly reports paused/incomplete checks and unverified items remain visible. This is an access limitation, not a successful end-to-end filtering test.
@@ -136,6 +148,8 @@ The dashboard’s 500-character field contains the short waist, filtered listing
 
 13. Keep inseam saved while checking dresses. Ordinary missing-inseam dresses should retain their existing results. A reported/spurious inseam must also be ignored for a recognized dress; waist/bust remain in effect. Jeans and jumpsuits still compare reported inseams. Verify inseam_applied is false for dresses.
 14. Configure hip, rise, and leg opening with independent directional allowances. Verify hip on dresses and pants, rise/opening only on pants/jeans/trousers, inclusive boundaries, missing optional values, and unknown categories. Confirm all new settings survive reopening the popup and that the 18 appended CSV fields match the garment values, rules, differences, and applicability flags. Rise/front rise must not borrow back rise; leg opening is not automatically doubled.
+
+15. Start a scan in two TRR tabs, then select Pause matching in the popup. Both tabs reload with the native grid and pagination. Reload and reopen the popup to confirm Pause persists. Export history while paused. Save changed measurements and confirm matching remains paused. Resume and verify both pages restart with saved settings.
 
 ## Build and official references
 

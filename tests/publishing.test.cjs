@@ -9,7 +9,7 @@ function load(folder) {
     console: { log() {}, warn() {} },
     Node: { ELEMENT_NODE: 1, TEXT_NODE: 3, DOCUMENT_NODE: 9 },
     document: {}, window: { location: new URL('https://www.therealreal.com/sales/test'), setTimeout() {}, clearTimeout() {} },
-    chrome: { storage: { sync: { get() {} } }, runtime: { onMessage: { addListener() {} } } } });
+    chrome: { storage: { local: { get() { return {}; } }, onChanged: { addListener() {} }, sync: { get() {} } }, runtime: { onMessage: { addListener() {} } } } });
   vm.runInContext(fs.readFileSync(`${folder}/matching.js`, 'utf8'), context);
   vm.runInContext(fs.readFileSync(`${folder}/contentscript.js`, 'utf8'), context);
   return context;

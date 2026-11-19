@@ -3,12 +3,26 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 
-async function popup(folder, { loadError = false, saveError = false, messageError = false, confirmClear = true, clearError = false, savedData = { waist: 28, bust: 36, tolerance: 2 } } = {}) {
-  const elements = Object.fromEntries(['hip', 'hipSmaller', 'hipLarger', 'hip-range', 'rise', 'riseSmaller', 'riseLarger', 'rise-range', 'legOpening', 'legOpeningSmaller', 'legOpeningLarger', 'legOpening-range', 'pants-measurements', 'waist', 'bust', 'inseam', 'inseamSmaller', 'inseamLarger', 'inseam-range', 'waistSmaller', 'waistLarger', 'bustSmaller', 'bustLarger', 'waist-range', 'bust-range', 'save', 'reload', 'settings-status', 'settings-form', 'export', 'export-status', 'clear']
+async function popup(folder, { loadError = false, saveError = false, messageError = false, confirmClear = true, clearError = false, pauseReadError = false, pauseWriteError = false, paused, savedData = { waist: 28, bust: 36, tolerance: 2 } } = {}) {
+  const elements = Object.fromEntries(['pause', 'matching-status', 'hip', 'hipSmaller', 'hipLarger', 'hip-range', 'rise', 'riseSmaller', 'riseLarger', 'rise-range', 'legOpening', 'legOpeningSmaller', 'legOpeningLarger', 'legOpening-range', 'pants-measurements', 'waist', 'bust', 'inseam', 'inseamSmaller', 'inseamLarger', 'inseam-range', 'waistSmaller', 'waistLarger', 'bustSmaller', 'bustLarger', 'waist-range', 'bust-range', 'save', 'reload', 'settings-status', 'settings-form', 'export', 'export-status', 'clear']
     .map(id => [id, { _value: '', get value() { return this._value; }, set value(value) { this._value = String(value); }, disabled: false, textContent: '', attrs: {}, setAttribute(key, value) { this.attrs[key] = value; }, getAttribute(key) { return this.attrs[key] || null; }, removeAttribute(key) { delete this.attrs[key]; }, closest() { return elements['pants-measurements']; }, focus() { this.focused = true; }, addEventListener(type, handler) { this[type] = handler; } }]));
   const actions = [];
+  let storageChanged;
+  const local = paused === undefined ? {} : { matchingPaused: paused };
   const context = vm.createContext({ document: { getElementById(id) { return elements[id]; } },
-    chrome: { storage: { sync: {
+    chrome: { storage: {
+      onChanged: { addListener(callback) { storageChanged = callback; } },
+      local: {
+        async get() { if (pauseReadError) throw new Error('local read failed'); return { ...local }; },
+        async set(settings) {
+          if (pauseWriteError) throw new Error('local write failed');
+          actions.push(['pause', { ...settings }]);
+          const oldValue = local.matchingPaused;
+          Object.assign(local, settings);
+          storageChanged({ matchingPaused: { oldValue, newValue: settings.matchingPaused } }, 'local');
+        }
+      },
+      sync: {
       async get() { if (loadError) throw new Error('load failed'); return savedData; },
       async set(settings) { if (saveError) throw new Error('sync failed'); actions.push(['save', { ...settings }]); }
     } }, tabs: {
@@ -21,7 +35,7 @@ async function popup(folder, { loadError = false, saveError = false, messageErro
   vm.runInContext(fs.readFileSync(`${folder}/popup.js`, 'utf8'), context);
   elements.save.click = () => elements['settings-form'].submit({ preventDefault() {} });
   await new Promise(setImmediate);
-  return { elements, actions };
+  return { elements, actions, storageChanged, local };
 }
 for (const folder of ['.', 'Measurement Matcher EXT']) {
   test(`${folder}: Enter/submit prevents navigation, validates and focuses the invalid field`, async () => {
@@ -209,5 +223,62 @@ for (const folder of ['.', 'Measurement Matcher EXT']) {
       assert.deepEqual(actions, []);
       assert.match(elements['settings-status'].textContent, /positive measurements/);
     }
+  });
+}
+
+for (const folder of ['.', 'Measurement Matcher EXT']) {
+  test(`${folder}: pause and resume persist locally without saving unsaved sizing edits`, async () => {
+    const { elements, actions, local } = await popup(folder);
+    assert.equal(elements.pause.textContent, 'Pause matching');
+    assert.equal(elements.pause.disabled, false);
+    elements.waist.value = '99';
+    await elements.pause.click();
+    assert.equal(local.matchingPaused, true);
+    assert.equal(elements.pause.textContent, 'Resume matching');
+    assert.equal(elements.save.textContent, 'Save measurements');
+    assert.match(elements['matching-status'].textContent, /paused/);
+    assert.deepEqual(actions, [['pause', { matchingPaused: true }]]);
+    const reopened = await popup(folder, { paused: true });
+    assert.equal(reopened.elements.pause.textContent, 'Resume matching');
+    await reopened.elements.pause.click();
+    assert.equal(reopened.local.matchingPaused, false);
+    assert.equal(reopened.elements.pause.textContent, 'Pause matching');
+    assert.equal(reopened.elements.save.textContent, 'Save & apply');
+  });
+  test(`${folder}: saving measurements while paused keeps matching paused`, async () => {
+    const { elements, actions, local } = await popup(folder, { paused: true });
+    elements.waist.value = '29';
+    await elements.save.click();
+    assert.equal(actions.length, 1);
+    assert.equal(actions[0][0], 'save');
+    assert.equal(actions[0][1].waist, 29);
+    assert.equal(local.matchingPaused, true);
+    assert.match(elements['settings-status'].textContent, /Measurements saved.*Resume matching/);
+  });
+  test(`${folder}: failed pause reads and writes are visible and preserve the saved state`, async () => {
+    const failedRead = await popup(folder, { pauseReadError: true });
+    assert.equal(failedRead.elements.pause.disabled, true);
+    assert.match(failedRead.elements['matching-status'].textContent, /could not be loaded/);
+    await failedRead.elements.pause.click();
+    assert.deepEqual(failedRead.actions, []);
+    for (const paused of [false, true]) {
+      const failedWrite = await popup(folder, { paused, pauseWriteError: true });
+      await failedWrite.elements.pause.click();
+      assert.equal(failedWrite.local.matchingPaused, paused);
+      assert.equal(failedWrite.elements.pause.textContent, paused ? 'Resume matching' : 'Pause matching');
+      assert.equal(failedWrite.elements.pause.disabled, false);
+      assert.match(failedWrite.elements['matching-status'].textContent, /could not be changed/);
+    }
+  });
+  test(`${folder}: popup tracks pause changes from another extension window and ignores observation writes`, async () => {
+    const f = await popup(folder);
+    f.storageChanged({ 'checkedListing:test': { newValue: {} } }, 'local');
+    f.storageChanged({ matchingPaused: { newValue: true } }, 'sync');
+    assert.equal(f.elements.pause.textContent, 'Pause matching');
+    f.storageChanged({ matchingPaused: { newValue: true } }, 'local');
+    assert.equal(f.elements.pause.textContent, 'Resume matching');
+    f.storageChanged({ matchingPaused: { oldValue: true } }, 'local');
+    assert.equal(f.elements.pause.textContent, 'Pause matching');
+    assert.deepEqual(f.actions, []);
   });
 }

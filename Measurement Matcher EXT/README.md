@@ -112,8 +112,12 @@ The downloaded CSV can be imported into PostgreSQL using your preferred tools. T
 
 ## Chrome Web Store release
 
-See the [release checklist](../store/RELEASE-CHECKLIST.md), [store listing draft](../store/STORE-LISTING.md), and [privacy policy](../PRIVACY.md) for version 1.9.2. Build from the project root with `python3 scripts/build_release.py`; the output is a clean ZIP in `../dist/`.
+See the [release checklist](../store/RELEASE-CHECKLIST.md), [store listing draft](../store/STORE-LISTING.md), and [privacy policy](../PRIVACY.md) for version 1.10.0. Build from the project root with `python3 scripts/build_release.py`; the output is a clean ZIP in `../dist/`.
 
 The toast counts this page-load scan, including later-page checks, while **Export checked listings** includes all saved scans and earlier dates. Missing-measurement (`undetermined`) and unchecked/failed-load counts are shown separately. Older observations have no scan ID; use their observation dates to distinguish historical data.
 
 Condition and fabric composition are read from the main product’s current TRR structured data, including fabric blends and lining composition. Semantic product-detail rows and older markup are fallbacks. Previously saved blank values stay in their original observations; rechecking a listing creates a new dated observation with the corrected fields. See [export extraction notes](../EXPORTS.md).
+
+## Pause and resume
+
+Use **Pause matching** at the top of the popup to stop checks and restore normal TRR browsing. **Resume matching** starts a fresh scan with saved measurements. Both actions reload all open TRR pages in this Chrome profile. The choice persists between visits. While paused, **Save measurements** updates preferences for your next scan.

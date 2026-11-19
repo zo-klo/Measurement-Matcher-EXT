@@ -1,6 +1,6 @@
 # Measurement Matcher Privacy Policy
 
-Effective date: November 9, 2026. Applies to Measurement Matcher version 1.9.2.
+Effective date: November 19, 2026. Applies to Measurement Matcher version 1.10.0.
 
 Measurement Matcher helps you compare clothing measurements on TheRealReal and save checked listing observations for CSV export. It is an independent extension and is not affiliated with or endorsed by TheRealReal.
 
@@ -20,6 +20,8 @@ Data is used only to provide measurement matching and your checked-listing CSV h
 
 Checked listing observations are saved using Chrome's storage.local API on this Chrome installation. They are not synced by the extension. Observations include the measurements used at the time of checking, so changing your preferences does not edit older observations. Local storage is subject to Chrome's quota. The extension does not add its own encryption to saved data or exported files.
 
+Your matching pause preference is also stored locally for this Chrome profile. Pause matching stops checks and reloads open TRR pages to restore normal browsing. The preference persists between visits. Resume matching reloads those pages and starts matching with your saved measurements.
+
 ## Network requests and sharing
 
 The extension requests TheRealReal pages over HTTPS to read product details. These same-origin requests use your existing browsing session and may include the session cookies that Chrome normally sends to TheRealReal. The extension does not read, copy, or store cookie values, account passwords, or payment information. Like other website requests, TheRealReal receives request URLs and ordinary connection information such as your IP address. Your entered body measurements are compared inside the extension; they are not sent to TheRealReal by the extension.
@@ -30,9 +32,9 @@ When you choose Export checked listings, the extension creates a CSV and asks Ch
 
 ## Access, retention, and deletion
 
-Open the popup to view or change your saved sizing preferences. Leave an unused measurement blank and use Save & apply to save the change. Export checked listings downloads your saved observations without deleting them.
+Open the popup to view or change your saved sizing preferences. Leave an unused measurement blank and use Save & apply to save the change. While matching is paused, use Save measurements to update your preferences. Export checked listings downloads your saved observations without deleting them.
 
-Clear checked listings removes saved listing observations from this Chrome installation after confirmation. It leaves sizing preferences and already-downloaded files in place. Open TRR pages can save new observations as matching continues. To stop new checks, close those pages or disable the extension. Records are otherwise retained without automatic expiry, subject to storage limits, until you clear them or uninstall the extension. Removing the extension clears its Chrome local storage. Remove any downloaded CSV files separately using your device's file controls. Chrome manages synced preferences through its sync settings.
+Clear checked listings removes saved listing observations from this Chrome installation after confirmation. It leaves sizing preferences and already-downloaded files in place. Open TRR pages can save new observations as matching continues. To stop new checks, select Pause matching in the popup. Records are otherwise retained without automatic expiry, subject to storage limits, until you clear them or uninstall the extension. Removing the extension clears its Chrome local storage. Remove any downloaded CSV files separately using your device's file controls. Chrome manages synced preferences through its sync settings.
 
 Failed or access-denied product requests are not saved as garment observations. Listing details can be missing or inaccurate if the website changes. Review exported data before relying on it.
 

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Measurement Matcher",
-  "version": "1.9.2",
+  "version": "1.10.0",
   "description": "Filter TheRealReal clothing by waist, bust, hip, inseam, rise, and leg opening. Export checked listings as CSV.",
   "permissions": [
     "storage"
