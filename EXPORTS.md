@@ -13,6 +13,10 @@ For example, waist 28 with 0.25 smaller and 1.5 larger accepts 27.75–29.5 inch
 
 Bust is ignored for recognized jeans, pants/trousers, shorts, skirts, and bottoms. Dresses ignore inseam. Hip applies across clothing. Rise and leg opening apply only to recognized pants, jeans, and trousers. Other/unknown categories retain the reported-inseam rule, with rise/opening skipped. Applicability comes from each garment's categorized URL or same-site canonical URL, rather than the search-page category.
 
+## Pausing checks
+
+Pause matching stops new evaluations and reloads open TRR pages to restore native browsing. Resume matching starts fresh scans with saved sizing preferences. The pause setting is stored locally for this Chrome profile and persists between visits. Existing observations remain available for export and deletion while paused.
+
 ## CSV columns
 
 Columns are appended as features are introduced; existing column positions are preserved. Measurements, allowances, and differences use inches. Differences are garment minus user target.

@@ -27,6 +27,10 @@ let sourceCandidates = [];
 let moreResults = null;
 let pagerMatchProduct = null;
 let routeReloadRequested = false;
+let matchingPaused = false;
+let pauseStateRevision = 0;
+let productObserver = null;
+let productObserverTimeout = null;
 const initialViewUrl = viewUrl();
 const activeRequests = new Set();
 
@@ -36,7 +40,26 @@ function viewUrl() {
   return url.href;
 }
 
-function isCurrentView() { return !routeReloadRequested && viewUrl() === initialViewUrl; }
+function isCurrentView() { return !matchingPaused && !routeReloadRequested && viewUrl() === initialViewUrl; }
+
+function reloadMatcherPage() {
+  if (routeReloadRequested) return;
+  routeReloadRequested = true;
+  for (const controller of activeRequests) controller.abort();
+  productObserver?.disconnect();
+  window.clearTimeout(productObserverTimeout);
+  // Reload restores TRR's original cards, styles and pagination together.
+  window.location.reload();
+}
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local" || !changes.matchingPaused) return;
+  pauseStateRevision += 1;
+  const paused = changes.matchingPaused.newValue === true;
+  if (paused === matchingPaused) return;
+  matchingPaused = paused;
+  reloadMatcherPage();
+});
 
 function watchForNavigation() {
   const check = () => {
@@ -383,6 +406,7 @@ function evaluateProduct(root, address, matchProduct) {
 
 let listingStorageFailed = false;
 async function saveCheckedListing(url, root, result) {
+  if (!isCurrentView()) return;
   try {
     await CheckedListings.save(url, root, result, getScanContext());
   } catch (error) {
@@ -1008,7 +1032,7 @@ async function supplementFromNextPages(matchProduct, existingCards, neededCount 
 async function runWithConcurrency(items, limit, worker) {
   const queue = [...items];
   const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    while (queue.length) {
+    while (queue.length && isCurrentView()) {
       const nextItem = queue.shift();
       if (!nextItem) {
         return;
@@ -1141,18 +1165,17 @@ async function performProductCardFilter(matchProduct) {
 }
 
 function watchForNewProducts(matchProduct) {
-  let timeoutId = null;
-
   const rerunFilter = () => {
-    window.clearTimeout(timeoutId);
-    timeoutId = window.setTimeout(() => {
+    if (!isCurrentView()) return;
+    window.clearTimeout(productObserverTimeout);
+    productObserverTimeout = window.setTimeout(() => {
       filterProductCards(matchProduct).catch((error) => {
         console.warn("Fit extension could not re-run product filtering", error);
       });
     }, 400);
   };
 
-  const observer = new MutationObserver((mutations) => {
+  productObserver = new MutationObserver((mutations) => {
     const hasNewProductLinks = mutations.some((mutation) => {
       if (mutation.target.closest?.("#fit-extension-grid-host, #fit-extension-status")) return false;
       return [...mutation.addedNodes].some((node) => {
@@ -1166,10 +1189,11 @@ function watchForNewProducts(matchProduct) {
     }
   });
 
-  observer.observe(document.body, { childList: true, subtree: true });
+  productObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 async function startMatcher(settings) {
+  if (!isCurrentView()) return;
   const matchProduct = buildMatcher(settings);
   if (!matchProduct) {
     return;
@@ -1199,11 +1223,16 @@ async function startMatcher(settings) {
   }
 }
 async function initializeMatcher() {
+  const revision = pauseStateRevision;
   try {
+    const saved = await chrome.storage.local.get("matchingPaused");
+    if (routeReloadRequested) return;
+    if (revision === pauseStateRevision) matchingPaused = saved.matchingPaused === true;
+    if (matchingPaused) return;
     await startMatcher(await chrome.storage.sync.get(MeasurementMatching.settingsKeys));
   } catch (error) {
     console.warn("Could not start Measurement Matcher", error);
-    updateStatusBadge("Matching could not start. Reload the page to retry.");
+    if (isCurrentView()) updateStatusBadge("Matching could not start. Reload the page to retry.");
   }
 }
 initializeMatcher();

@@ -31,7 +31,7 @@ function fixture(folder, ids) {
   const context = vm.createContext({ URL, AbortController, crypto: webcrypto,
     console: { log() {}, warn() {} }, document,
     window: { location: new URL(searchUrl), setTimeout() {}, clearTimeout() {}, addEventListener() {}, setInterval() {} },
-    chrome: { storage: { sync: { get() {} } }, runtime: { onMessage: { addListener() {} } } } });
+    chrome: { storage: { local: { get() { return {}; } }, onChanged: { addListener() {} }, sync: { get() {} } }, runtime: { onMessage: { addListener() {} } } } });
   vm.runInContext(fs.readFileSync(`${folder}/matching.js`, 'utf8'), context);
   vm.runInContext(fs.readFileSync(`${folder}/contentscript.js`, 'utf8'), context);
   const cards = values => values.map(id => ({ url: productUrl(id), card: { id } }));

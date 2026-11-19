@@ -1,6 +1,53 @@
 const measurementInputs = Object.fromEntries(MeasurementMatching.measurements.map(key => [key, document.getElementById(key)]));
 const allowanceInputs = Object.fromEntries(MeasurementMatching.allowanceKeys.map(key => [key, document.getElementById(key)]));
 const saveButton = document.getElementById("save");
+const pauseButton = document.getElementById("pause");
+const matchingStatus = document.getElementById("matching-status");
+let matchingPaused = false;
+let pauseStateRevision = 0;
+
+function showMatchingState() {
+  pauseButton.textContent = matchingPaused ? "Resume matching" : "Pause matching";
+  saveButton.textContent = matchingPaused ? "Save measurements" : "Save & apply";
+  matchingStatus.textContent = matchingPaused ? "Matching is paused." : "Matching is on.";
+}
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local" || !changes.matchingPaused) return;
+  pauseStateRevision += 1;
+  matchingPaused = changes.matchingPaused.newValue === true;
+  showMatchingState();
+});
+
+async function loadMatchingState() {
+  pauseButton.disabled = true;
+  const revision = pauseStateRevision;
+  try {
+    const saved = await chrome.storage.local.get("matchingPaused");
+    if (revision === pauseStateRevision) matchingPaused = saved.matchingPaused === true;
+    showMatchingState();
+    pauseButton.disabled = false;
+  } catch (error) {
+    matchingStatus.textContent = "Matching status could not be loaded. Reopen the popup to retry.";
+    console.error("Could not load matching status", error);
+  }
+}
+
+pauseButton.addEventListener("click", async () => {
+  if (pauseButton.disabled) return;
+  pauseButton.disabled = true;
+  const paused = !matchingPaused;
+  try {
+    await chrome.storage.local.set({ matchingPaused: paused });
+    matchingPaused = paused;
+    showMatchingState();
+  } catch (error) {
+    matchingStatus.textContent = "Matching could not be changed. Please try again.";
+    console.error("Could not change matching status", error);
+  } finally {
+    pauseButton.disabled = false;
+  }
+});
 
 function setSavedValue(input, value) {
   if (value !== undefined && value !== null && !Number.isNaN(value)) {
@@ -83,6 +130,10 @@ document.getElementById("settings-form").addEventListener("submit", async event 
   saveButton.disabled = true;
   try {
     await chrome.storage.sync.set({ ...measurements, ...allowances });
+    if (matchingPaused) {
+      settingsStatus.textContent = "Measurements saved. Resume matching when you’re ready.";
+      return;
+    }
     settingsStatus.textContent = "Saved. Applying measurements...";
     try {
       await applyToCurrentPage();
@@ -162,3 +213,4 @@ clearButton.addEventListener("click", async () => {
 });
 
 loadSavedSettings();
+loadMatchingState();

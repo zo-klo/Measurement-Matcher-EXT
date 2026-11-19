@@ -12,6 +12,12 @@
     <div><h1>Measurement Matcher</h1><p>Find your fit on TheRealReal.</p></div>
   </header>
   <main>
+    <section aria-labelledby="matching-heading">
+      <h2 id="matching-heading">Matching</h2>
+      <button id="pause" type="button" class="secondary wide" aria-describedby="matching-hint" disabled>Pause matching</button>
+      <p id="matching-status" class="status" role="status">Loading matching status…</p>
+      <p id="matching-hint" class="hint">Applies to all TRR tabs in this Chrome profile. Pausing or resuming reloads open TRR pages.</p>
+    </section>
     <section aria-labelledby="measurements-heading">
       <form id="settings-form" method="post" action="popup.html" novalidate>
       <h2 id="measurements-heading">Your measurements</h2>

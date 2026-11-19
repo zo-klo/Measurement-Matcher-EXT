@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const { webcrypto } = require('node:crypto');
 
 function setup(folder = '.') {
-  const stored = { unrelated: 'keep' };
+  const stored = { unrelated: 'keep', matchingPaused: true };
   const context = vm.createContext({ URL, crypto: webcrypto, console,
     chrome: { storage: { local: {
       async set(values) { Object.assign(stored, values); },

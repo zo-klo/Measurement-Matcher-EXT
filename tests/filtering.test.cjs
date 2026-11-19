@@ -34,12 +34,12 @@ function product(bust, waist, withDetails = false) {
   ]);
   return { body, querySelectorAll: body.querySelectorAll };
 }
-function load(folder) {
+function load(folder, url = 'https://www.therealreal.com/sales/test') {
   const context = vm.createContext({ console: { log() {}, warn() {} }, URL, crypto: webcrypto, AbortController,
     Node: { TEXT_NODE: 3, ELEMENT_NODE: 1, DOCUMENT_NODE: 9 },
     document: {},
-    window: { setTimeout() {}, clearTimeout() {}, location: new URL('https://www.therealreal.com/sales/test') },
-    chrome: { runtime: { onMessage: { addListener() {} } }, storage: { sync: { get() {} } } } });
+    window: { setTimeout() {}, clearTimeout() {}, location: new URL(url) },
+    chrome: { runtime: { onMessage: { addListener() {} } }, storage: { local: { get() { return {}; } }, onChanged: { addListener() {} }, sync: { get() {} } } } });
   vm.runInContext(fs.readFileSync(`${folder}/matching.js`, 'utf8'), context);
   vm.runInContext(fs.readFileSync(`${folder}/contentscript.js`, 'utf8'), context);
   return context;
@@ -194,8 +194,7 @@ for (const folder of ['.', 'Measurement Matcher EXT']) {
   });
   test(`${folder}: directly opened dresses ignore reported inseam while jumpsuits still use it`, async () => {
     for (const [category, expected] of [['dresses', 'match'], ['jumpsuits', 'not match']]) {
-      const context = load(folder);
-      context.window.location = new URL(`https://www.therealreal.com/products/women/clothing/${category}/item`);
+      const context = load(folder, `https://www.therealreal.com/products/women/clothing/${category}/item`);
       context.document = product(36, 28);
       context.extractMeasurements = () => ({ itemBust: 36, itemWaist: 28, itemInseam: 1 });
       context.watchForNavigation = () => {};
@@ -272,8 +271,7 @@ for (const folder of ['.', 'Measurement Matcher EXT']) {
   });
   test(`${folder}: directly opened jeans and dresses use the same applicability rule as grid checks`, async () => {
     for (const [category, expected] of [['jeans', 'match'], ['dresses', 'match']]) {
-      const context = load(folder);
-      context.window.location = new URL(`https://www.therealreal.com/products/women/clothing/${category}/item`);
+      const context = load(folder, `https://www.therealreal.com/products/women/clothing/${category}/item`);
       context.document = product('unavailable', 28);
       context.watchForNavigation = () => {};
       let saved;
@@ -490,7 +488,7 @@ for (const folder of ['.', 'Measurement Matcher EXT']) {
     let scheduled = 0;
     context.MutationObserver = class { constructor(callback) { onMutation = callback; } observe() {} };
     context.document = { body: {} };
-    context.window = { clearTimeout() {}, setTimeout() { scheduled++; } };
+    context.window = { ...context.window, clearTimeout() {}, setTimeout() { scheduled++; } };
     context.watchForNewProducts(() => {});
     onMutation([{ target: { closest() { return {}; } }, addedNodes: [{}] }]);
     assert.equal(scheduled, 0);

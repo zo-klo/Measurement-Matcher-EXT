@@ -22,7 +22,7 @@ function load(folder, path = '/sales/all-items', document = root()) {
   const context = vm.createContext({ URL, AbortController, crypto: webcrypto,
     console: { log() {}, warn() {} }, document,
     window: { location: new URL(origin + path), setTimeout() {}, clearTimeout() {} },
-    chrome: { runtime: { onMessage: { addListener() {} } }, storage: { sync: { get() {} } } } });
+    chrome: { runtime: { onMessage: { addListener() {} } }, storage: { local: { get() { return {}; } }, onChanged: { addListener() {} }, sync: { get() {} } } } });
   vm.runInContext(fs.readFileSync(`${folder}/matching.js`, 'utf8'), context);
   vm.runInContext(fs.readFileSync(`${folder}/contentscript.js`, 'utf8'), context);
   context.getCardContainer = anchor => anchor.card;
